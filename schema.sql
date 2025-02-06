@@ -1,0 +1,12 @@
+CREATE TABLE inputcode (
+  id CHAR(24) PRIMARY KEY,
+  code TEXT NOT NULL
+);
+
+CREATE TABLE users (
+  id CHAR(24) PRIMARY KEY,
+);
+
+CREATE TABLE sessions (
+  id CHAR(24) PRIMARY KEY,
+);
