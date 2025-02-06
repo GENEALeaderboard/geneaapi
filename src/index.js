@@ -34,7 +34,8 @@ export default {
 		// Verify the JWT token
 		const isvalid = await isValidateToken(request, env)
 		if (!isvalid) {
-			return responseError(null, "Unauthorized", 401, corsHeaders)
+			console.log("isvalid", isvalid)
+			return responseError(null, "Unauthorized token", 401, corsHeaders)
 		}
 		try {
 			const result = await db.prepare("SELECT * FROM inputcode").all()
