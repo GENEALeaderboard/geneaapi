@@ -2,6 +2,14 @@ import { responseError } from "./response"
 import { fetchStudies } from "./fetchStudies"
 import { isValidateToken } from "./validateToken"
 import { fetchInputCode } from "./fetchInputCode"
+// import { Database } from "@cloudflare/d1"
+// import { Miniflare } from "miniflare"
+
+// const mf = new Miniflare({
+// 	d1Databases: {
+// 		DB_HEMVIP: "36316b2a-afc7-4db4-a639-a68d4f8b212c",
+// 	},
+// })
 
 export default {
 	async fetch(request, env, ctx) {
@@ -17,13 +25,18 @@ export default {
 			return new Response(null, { headers: corsHeaders })
 		}
 
+		const db = env.DB_HEMVIP
+
+		if (!db) {
+			// const db = await mf.getD1Database("DB");
+		}
+
 		// Verify the JWT token
 		const isvalid = await isValidateToken(request, env)
 		if (!isvalid) {
 			return responseError(null, "Unauthorized", 401, corsHeaders)
 		}
 		try {
-			const db = env.MY_DB
 			const result = await db.prepare("SELECT * FROM inputcode").all()
 			console.log("result", result)
 		} catch (error) {
