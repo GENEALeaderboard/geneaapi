@@ -1,4 +1,4 @@
-import { responseError } from "./response"
+import { responseError, responseSuccess } from "./response"
 import { fetchStudies } from "./fetchStudies"
 import { isValidateToken } from "./validateToken"
 import { fetchInputCode } from "./fetchInputCode"
@@ -39,6 +39,7 @@ export default {
 		try {
 			const result = await db.prepare("SELECT * FROM inputcode").all()
 			console.log("result", result)
+			return responseSuccess(result, corsHeaders)
 		} catch (error) {
 			console.error("Error", error)
 			return responseError(error, "Failed to connect to Database", 500, corsHeaders)
