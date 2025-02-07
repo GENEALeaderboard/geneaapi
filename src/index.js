@@ -36,6 +36,12 @@ export default {
 						return new Response("Invalid api", { status: 404 })
 				}
 			} else if (url.pathname.startsWith("/api/")) {
+				const isValid = await isValidateToken(request, env)
+
+				if (!isValid) {
+					return responseError(null, "Unauthorized", 401, corsHeaders)
+				}
+
 				switch (path) {
 					case "/api/inputcode":
 						return fetchInputCode(request, env, corsHeaders)
