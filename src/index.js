@@ -47,6 +47,7 @@ export default {
 						return new Response("Invalid api", { status: 404 })
 				}
 			}
+			return responseError(null, "Invalid api", 404, corsHeaders)
 		} catch (err) {
 			return responseError(err, err.message, 500, corsHeaders)
 		}
