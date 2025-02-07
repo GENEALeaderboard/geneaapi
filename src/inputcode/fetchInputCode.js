@@ -7,7 +7,7 @@ export async function fetchInputCode(request, env, corsHeaders) {
 		const response = await db.prepare("SELECT * FROM inputcode").all()
 
 		if (!response.result) {
-			return responseFailed("No studies found", 404, corsHeaders)
+			return responseFailed(null, "No studies found", 404, corsHeaders)
 		}
 
 		return responseSuccess({ codes: response.result }, corsHeaders)
