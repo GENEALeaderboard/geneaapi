@@ -1,15 +1,10 @@
 import { responseError, responseSuccess } from "./response"
-import { fetchStudies } from "./fetchStudies"
 import { isValidateToken } from "./validateToken"
-import { fetchInputCode } from "./fetchInputCode"
-// import { Database } from "@cloudflare/d1"
-// import { Miniflare } from "miniflare"
-
-// const mf = new Miniflare({
-// 	d1Databases: {
-// 		DB_HEMVIP: "36316b2a-afc7-4db4-a639-a68d4f8b212c",
-// 	},
-// })
+import { fetchStudies } from "./studies/fetchStudies"
+import { fetchInputCode } from "./inputcode/fetchInputCode"
+import { handleGithubCallback } from "./auth/handleGithubCallback"
+import { handleGetUser } from "./auth/handleGetUser"
+import { handleLogout } from "./auth/handleLogout"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -25,56 +20,31 @@ export default {
 			return new Response(null, { headers: corsHeaders })
 		}
 
-		const db = env.DB_HEMVIP
-
-		if (!db) {
-			// const db = await mf.getD1Database("DB");
-		}
-
-		// Verify the JWT token
-		const isvalid = await isValidateToken(request, env)
-		if (!isvalid) {
-			console.log("isvalid", isvalid)
-			return responseError(null, "Unauthorized token", 401, corsHeaders)
-		}
-		try {
-			const result = await db.prepare("SELECT * FROM inputcode").all()
-			console.log("result", result)
-			return responseSuccess(result, corsHeaders)
-		} catch (error) {
-			console.error("Error", error)
-			return responseError(error, "Failed to connect to Database", 500, corsHeaders)
-		}
-
 		const url = new URL(request.url)
 		const path = url.pathname
 
 		try {
-			if (request.method === "GET") {
+			if (url.pathname.startsWith("/auth/")) {
 				switch (path) {
-					// case "/api/studies":
-					// 	return fetchStudies(client, request, env, corsHeaders)
-					// case "/api/inputcode":
-					// 	return fetchInputCode(client, request, env, corsHeaders)
-					// case '/api/studies/github':
-					// 	return fetchStudies(request, env, corsHeaders)
-					// case '/api/studies':
-					// 	return handleGetUser(request, env, corsHeaders)
-					// case '/api/studies':
-					// 	return handleLogout(request, env, corsHeaders)
+					case "/auth/callback/github":
+						return handleGithubCallback(request, env, corsHeaders)
+					case "/auth/user":
+						return handleGetUser(request, env, corsHeaders)
+					case "/auth/logout":
+						return handleLogout(request, env, corsHeaders)
 					default:
-						return responseError(null, "Invalid GET api", 404, corsHeaders)
+						return new Response("Invalid api", { status: 404 })
 				}
-			} else if (request.method === "POST") {
+			} else if (url.pathname.startsWith("/api/")) {
 				switch (path) {
-					// case '/api/studies/github':
-					// 	return fetchStudies(request, env, corsHeaders)
-					// case '/api/studies':
+					case "/api/inputcode":
+						return fetchInputCode(request, env, corsHeaders)
+					// case "/api/studies":
 					// 	return handleGetUser(request, env, corsHeaders)
-					// case '/api/studies':
+					// case "/api/logout":
 					// 	return handleLogout(request, env, corsHeaders)
 					default:
-						return responseError(null, "Invalid POST api", 404, corsHeaders)
+						return new Response("Invalid api", { status: 404 })
 				}
 			}
 		} catch (err) {

@@ -13,6 +13,7 @@
 		"@cloudflare/vitest-pool-workers": "^0.5.16",
 		"miniflare": "^3.20250129.0",
 		"vitest": "2.1.2",
+		"@cloudflare/workers-types": "^4.20250204.0",
 		"wrangler": "^3.80.2"
 	},
 	"dependencies": {

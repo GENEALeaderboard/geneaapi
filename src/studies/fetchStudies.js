@@ -1,4 +1,4 @@
-import { responseError, responseFailed, responseSuccess } from "./response"
+import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchStudies(client, request, env, corsHeaders) {
 	try {

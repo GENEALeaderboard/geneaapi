@@ -17,7 +17,9 @@ workers_dev = true
 # Note: Use secrets to store sensitive data.
 # - https://developers.cloudflare.com/workers/configuration/secrets/
 [vars]
-ALLOWED_ORIGIN="https://genealeaderboard.github.io"
+ALLOWED_ORIGIN = "https://genealeaderboard.github.io"
+GITHUB_CLIENT_ID = "Ov23li4Jpr0iorMBiOPt"
+ENVIRONMENT = "production"
 
 [dev]
 port = 8031
