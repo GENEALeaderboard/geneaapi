@@ -3,10 +3,51 @@ CREATE TABLE inputcode (
   code TEXT NOT NULL
 );
 
-CREATE TABLE users (
-  id CHAR(24) PRIMARY KEY,
-);
+-- Accounts
+CREATE TABLE "accounts" (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	access_token TEXT NOT NULL,
+	scope TEXT NOT NULL,
+	token_type VARCHAR(20) NOT NULL,
+	providerAccountId VARCHAR(50) NOT NULL,
+	provider VARCHAR(50) NOT NULL,
+	type VARCHAR(20) NOT NULL,
+	userId CHAR(24) NOT NULL,
+	FOREIGN KEY (userId) REFERENCES "users"(id) ON DELETE CASCADE
+)
+
+
+CREATE TABLE "users" (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name VARCHAR(255) NOT NULL,
+	username VARCHAR(100) UNIQUE NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	avatar TEXT,
+	verified BOOLEAN DEFAULT FALSE,
+	emailVerified TIMESTAMP NULL
+)
 
 CREATE TABLE sessions (
-  id CHAR(24) PRIMARY KEY,
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    session_token VARCHAR(255) NOT NULL,
+    user_id CHAR(24) NOT NULL,
+    expires DATETIME NOT NULL
+)
+
+CREATE TABLE "systems" (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255),
+    description TEXT,
+    type VARCHAR(255)
+);
+
+
+CREATE TABLE "videos" (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    inputcode VARCHAR(255) NOT NULL,
+    systemname VARCHAR(255),
+    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    path TEXT NOT NULL,
+		url TEXT NOT NULL,
+    systemid CHAR(24) NOT NULL
 );
