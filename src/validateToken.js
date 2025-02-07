@@ -3,9 +3,7 @@ import { verify } from "@tsndr/cloudflare-worker-jwt"
 
 export async function isValidateToken(request, env) {
 	const cookies = request.headers.get("Cookie") || ""
-	console.log("cookies", cookies)
 	const tokenMatch = cookies.match(/genea-auth-token=([^;]+)/)
-	console.log("tokenMatch[1]", tokenMatch)
 	const token = tokenMatch ? tokenMatch[1] : null
 	if (!token) {
 		return false

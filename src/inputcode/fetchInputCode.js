@@ -11,7 +11,7 @@ export async function fetchInputCode(request, env, corsHeaders) {
 
 		const codes = response.results[0].code.split(",")
 
-		return responseSuccess(codes, corsHeaders)
+		return responseSuccess(codes, "Fetch codes success", corsHeaders)
 	} catch (err) {
 		console.error("Exception", err)
 		return responseError(err, "Exception", 500, corsHeaders)

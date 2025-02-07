@@ -14,7 +14,7 @@ export async function handleGetUser(request, env, corsHeaders) {
 	try {
 		const res = await verify(token, env.JWT_SECRET)
 		if (res?.payload) {
-			return responseSuccess(res.payload, corsHeaders)
+			return responseSuccess(res.payload, "Authenticate successfully",corsHeaders)
 		} else {
 			return responseFailed(null, "Invalid token", 401, corsHeaders)
 		}

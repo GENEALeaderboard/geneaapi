@@ -9,7 +9,7 @@ export async function fetchStudies(client, request, env, corsHeaders) {
 			return responseFailed(null, "No studies found", 404, corsHeaders)
 		}
 
-		return responseSuccess({ codes: response.result }, corsHeaders)
+		return responseSuccess({ codes: response.result }, "Fetch studies success", corsHeaders)
 	} catch (err) {
 		return responseError(err, "Exception", 401, corsHeaders)
 	}

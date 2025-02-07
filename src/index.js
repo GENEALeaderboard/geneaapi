@@ -1,10 +1,11 @@
-import { responseError, responseSuccess } from "./response"
+import { responseError } from "./response"
 import { isValidateToken } from "./validateToken"
 import { fetchStudies } from "./studies/fetchStudies"
 import { fetchInputCode } from "./inputcode/fetchInputCode"
 import { handleGithubCallback } from "./auth/handleGithubCallback"
 import { handleGetUser } from "./auth/handleGetUser"
 import { handleLogout } from "./auth/handleLogout"
+import { updateInputCode } from "./inputcode/updateInputCode"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -22,6 +23,7 @@ export default {
 
 		const url = new URL(request.url)
 		const path = url.pathname
+		const menthod = request.method
 
 		try {
 			if (url.pathname.startsWith("/auth/")) {
@@ -42,15 +44,22 @@ export default {
 					return responseError(null, "Unauthorized", 401, corsHeaders)
 				}
 
-				switch (path) {
-					case "/api/inputcode":
-						return fetchInputCode(request, env, corsHeaders)
-					// case "/api/studies":
-					// 	return handleGetUser(request, env, corsHeaders)
-					// case "/api/logout":
-					// 	return handleLogout(request, env, corsHeaders)
-					default:
-						return new Response("Invalid api", { status: 404 })
+				if (menthod === "GET") {
+					switch (path) {
+						case "/api/inputcode":
+							return fetchInputCode(request, env, corsHeaders)
+						case "/api/studies":
+							return fetchStudies(request, env, corsHeaders)
+						default:
+							return new Response("Invalid api", { status: 404 })
+					}
+				} else if (menthod === "POST") {
+					switch (path) {
+						case "/api/inputcode":
+							return updateInputCode(request, env, corsHeaders)
+						default:
+							return new Response("Invalid api", { status: 404 })
+					}
 				}
 			}
 

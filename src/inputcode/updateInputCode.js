@@ -2,16 +2,17 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function updateInputCode(request, env, corsHeaders) {
 	try {
-		// const result = {}
+		const { codes } = await request.json()
+		console.log("codes", codes)
 		const db = env.DB_HEMVIP
-		const response = await db.prepare('INSERT INTO inputcode (id, code) VALUES (1, "wayne_0_1_1")').all()
+		const response = await db.prepare("UPDATE inputcode SET code = ? WHERE id = 1").bind(codes).run()
 		console.log("response", JSON.stringify(response))
 
-		if (!response.results) {
-			return responseFailed(null, "No inputcodes found", 404, corsHeaders)
+		if (!response.success) {
+			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)
 		}
 
-		return responseSuccess({ codes: response.results }, corsHeaders)
+		return responseSuccess({}, "Input Codes updated successfully", corsHeaders)
 	} catch (err) {
 		console.error("Exception", err)
 		return responseError(err, "Exception", 500, corsHeaders)
