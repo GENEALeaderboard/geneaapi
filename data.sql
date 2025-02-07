@@ -9,3 +9,4 @@ INSERT INTO inputcode (id, code) VALUES
 (8, 'scott_0_3_3'),
 (9, 'scott_0_4_4'),
 (10, 'scott_0_5_5');
+
