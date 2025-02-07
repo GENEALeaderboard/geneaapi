@@ -9,6 +9,8 @@ export async function handleGithubCallback(request, env, corsHeaders) {
 		return responseFailed(null, "No code provided", 400, corsHeaders)
 	}
 
+	console.log("env", env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET, code)
+
 	// Exchange code for access token
 	const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
 		method: "POST",
@@ -22,6 +24,8 @@ export async function handleGithubCallback(request, env, corsHeaders) {
 			code,
 		}),
 	})
+
+	console.log("tokenResponse", tokenResponse)
 
 	// Check if token response is OK
 	if (!tokenResponse.ok) {
