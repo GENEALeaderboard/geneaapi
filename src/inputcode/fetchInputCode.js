@@ -2,8 +2,9 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchInputCode(request, env, corsHeaders) {
 	try {
-		const result = {}
-		// const result = await db.prepare("SELECT * FROM inputcode").all()
+		// const result = {}
+		const db = env.DB_HEMVIP
+		const result = await db.prepare("SELECT * FROM inputcode").all()
 		console.log("result", result)
 		if (!result) {
 			return responseFailed("No studies found", 404, corsHeaders)

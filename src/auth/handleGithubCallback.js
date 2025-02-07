@@ -34,7 +34,7 @@ export async function handleGithubCallback(request, env, corsHeaders) {
 		return responseFailed(null, `GitHub token request failed: ${errorText}`, 400, corsHeaders)
 	}
 
-	const tokenData = await tokenResponse.json()
+	const tokenData = await tokenResponse.json	()
 
 	if (!tokenData.access_token) {
 		return responseFailed(null, `Invalid GitHub OAuth response: ${JSON.stringify(tokenData)}`, 400, corsHeaders)
