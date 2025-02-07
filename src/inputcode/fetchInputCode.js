@@ -1,10 +1,11 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function fetchInputCode( request, env, corsHeaders) {
+export async function fetchInputCode(request, env, corsHeaders) {
 	try {
-		const result = {}
-		// const { codes } = result
-		// console.log("codes", codes)
+		// const result = {}
+		const result = await db.prepare("SELECT * FROM inputcode").all()
+		console.log("result", result)
+		return responseSuccess(result, corsHeaders)
 		if (!result) {
 			return responseFailed("No studies found", 404, corsHeaders)
 		}
