@@ -12,7 +12,7 @@ export async function fetchSystems(request, env, corsHeaders) {
 			return responseFailed(null, "No systems found", 404, corsHeaders)
 		}
 
-		return responseSuccess({ systems: response.results }, "Fetch systems success", corsHeaders)
+		return responseSuccess(response.results, "Fetch systems success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", errorMessage)
