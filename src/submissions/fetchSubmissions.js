@@ -1,12 +1,7 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function fetchSubmissions(request, env, corsHeaders) {
+export async function fetchSubmissions(request, db, corsHeaders) {
 	try {
-		const db = env.DB_HEMVIP
-		if (!db) {
-			return responseFailed(null, "No database found", 404, corsHeaders)
-		}
-
 		const response = await db.prepare("SELECT * FROM submissions").all()
 
 		if (!response.results) {

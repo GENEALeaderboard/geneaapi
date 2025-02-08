@@ -1,12 +1,7 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function insertSystems(request, env, corsHeaders) {
+export async function insertSystems(request, db, corsHeaders) {
 	try {
-		const db = env.DB_HEMVIP
-		if (!db) {
-			return responseFailed(null, "No database found", 404, corsHeaders)
-		}
-
 		const { newSystem } = await request.json()
 		if (!newSystem) {
 			return responseFailed(null, "New Systems not found", 400, corsHeaders)

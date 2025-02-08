@@ -50,37 +50,37 @@ export default {
 				// }
 				const db = env.DB_HEMVIP
 				if (!db) {
-					return responseError(null, "No database found sssss", 404, corsHeaders)
+					return responseError(null, "No database found", 404, corsHeaders)
 				}
 
 				if (menthod === "GET") {
 					switch (path) {
 						case "/api/inputcode":
-							return fetchInputCode(request, env, corsHeaders)
+							return fetchInputCode(request, db, corsHeaders)
 						case "/api/studies":
-							return fetchStudies(request, env, corsHeaders)
+							return fetchStudies(request, db, corsHeaders)
 						case "/api/systems":
-							return fetchSystems(request, env, corsHeaders)
+							return fetchSystems(request, db, corsHeaders)
 						case "/api/submissions":
-							return fetchSubmissions(request, env, corsHeaders)
+							return fetchSubmissions(request, db, corsHeaders)
 						case "/api/videos":
-							return fetchVideos(request, env, corsHeaders)
+							return fetchVideos(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
 				} else if (menthod === "POST") {
 					switch (path) {
 						case "/api/systems":
-							return insertSystems(request, env, corsHeaders)
+							return insertSystems(request, db, corsHeaders)
 						case "/api/videos":
-							return insertVideos(request, env, corsHeaders)
+							return insertVideos(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
 				} else if (menthod === "PATCH") {
 					switch (path) {
 						case "/api/inputcode":
-							return updateInputCode(request, env, corsHeaders)
+							return updateInputCode(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}

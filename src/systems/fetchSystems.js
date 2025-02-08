@@ -1,11 +1,7 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function fetchSystems(request, env, corsHeaders) {
+export async function fetchSystems(request, db, corsHeaders) {
 	try {
-		const db = env.DB_HEMVIP
-		if (!db) {
-			return responseFailed(null, "No database found fetchSystems", 404, corsHeaders)
-		}
 		const response = await db.prepare("SELECT * FROM systems").all()
 
 		if (!response.results) {

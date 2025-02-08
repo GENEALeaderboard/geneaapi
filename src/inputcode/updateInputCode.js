@@ -1,12 +1,7 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function updateInputCode(request, env, corsHeaders) {
+export async function updateInputCode(request, db, corsHeaders) {
 	try {
-		const db = env.DB_HEMVIP
-		if (!db) {
-			return responseFailed(null, "No database found", 404, corsHeaders)
-		}
-
 		const { codes } = await request.json()
 		if (!codes) {
 			return responseFailed(null, "Invalid input", 400, corsHeaders)

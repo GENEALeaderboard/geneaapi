@@ -1,11 +1,7 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function fetchVideos(request, env, corsHeaders) {
+export async function fetchVideos(request, db, corsHeaders) {
 	try {
-		const db = env.DB_HEMVIP
-		if (!db) {
-			return responseFailed(null, "Database no found", 404, corsHeaders)
-		}
 		const response = await db.prepare("SELECT * FROM videos").all()
 
 		if (!response.results) {
