@@ -13,7 +13,7 @@ export async function fetchSubmissions(request, env, corsHeaders) {
 			return responseFailed(null, "No submissions found", 404, corsHeaders)
 		}
 
-		return responseSuccess({ submissions: response.results }, "Fetch submissions success", corsHeaders)
+		return responseSuccess(response.results, "Fetch submissions success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", errorMessage)
