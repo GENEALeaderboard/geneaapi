@@ -29,3 +29,5 @@ VALUES ('NA', 'Natural Mocap', 'groundtruth'),
 	('BA', 'baseline 1', 'baseline'),
 	('SA', 'System 1', 'system'),
 	('SB', 'Cite Graph 1', 'system');
+
+

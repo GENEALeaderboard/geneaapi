@@ -38,17 +38,19 @@ export default {
 						return new Response("Invalid api", { status: 404 })
 				}
 			} else if (url.pathname.startsWith("/api/")) {
-				const isValid = await isValidateToken(request, env)
+				// const isValid = await isValidateToken(request, env)
 
-				if (!isValid) {
-					return responseError(null, "Unauthorized", 401, corsHeaders)
-				}
+				// if (!isValid) {
+				// 	return responseError(null, "Unauthorized", 401, corsHeaders)
+				// }
 
 				if (menthod === "GET") {
 					switch (path) {
 						case "/api/inputcode":
 							return fetchInputCode(request, env, corsHeaders)
 						case "/api/studies":
+							return fetchStudies(request, env, corsHeaders)
+						case "/api/systems":
 							return fetchStudies(request, env, corsHeaders)
 						default:
 							return new Response("Invalid api", { status: 404 })
