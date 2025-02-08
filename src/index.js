@@ -1,4 +1,4 @@
-import { responseError } from "./response"
+import { responseError, responseFailed } from "./response"
 import { isValidateToken } from "./validateToken"
 import { fetchStudies } from "./studies/fetchStudies"
 import { fetchInputCode } from "./inputcode/fetchInputCode"
@@ -9,6 +9,8 @@ import { updateInputCode } from "./inputcode/updateInputCode"
 import { fetchSubmissions } from "./submissions/fetchSubmissions"
 import { fetchSystems } from "./systems/fetchSystems"
 import { insertSystems } from "./systems/insertSystems"
+import { fetchVideos } from "./videos/fetchVideos"
+import { insertVideos } from "./videos/insertVideos"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -38,7 +40,7 @@ export default {
 					case "/auth/logout":
 						return handleLogout(request, env, corsHeaders)
 					default:
-						return new Response("Invalid api", { status: 404 })
+						return responseFailed(null, "Invalid api", 404, corsHeaders)
 				}
 			} else if (url.pathname.startsWith("/api/")) {
 				// const isValid = await isValidateToken(request, env)
@@ -61,22 +63,26 @@ export default {
 							return fetchSystems(request, env, corsHeaders)
 						case "/api/submissions":
 							return fetchSubmissions(request, env, corsHeaders)
+						case "/api/videos":
+							return fetchVideos(request, env, corsHeaders)
 						default:
-							return new Response("Invalid api", { status: 404 })
+							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
 				} else if (menthod === "POST") {
 					switch (path) {
 						case "/api/systems":
 							return insertSystems(request, env, corsHeaders)
+						case "/api/videos":
+							return insertVideos(request, env, corsHeaders)
 						default:
-							return new Response("Invalid api", { status: 404 })
+							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
 				} else if (menthod === "PATCH") {
 					switch (path) {
 						case "/api/inputcode":
 							return updateInputCode(request, env, corsHeaders)
 						default:
-							return new Response("Invalid api", { status: 404 })
+							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
 				}
 			}
