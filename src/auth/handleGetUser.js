@@ -19,6 +19,8 @@ export async function handleGetUser(request, env, corsHeaders) {
 			return responseFailed(null, "Invalid token", 401, corsHeaders)
 		}
 	} catch (err) {
-		responseError(err, "Invalid token", 401, corsHeaders)
+		const errorMessage = err.message || "An unknown error occurred"
+		console.log("Exception", errorMessage)
+		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }

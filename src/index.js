@@ -6,6 +6,8 @@ import { handleGithubCallback } from "./auth/handleGithubCallback"
 import { handleGetUser } from "./auth/handleGetUser"
 import { handleLogout } from "./auth/handleLogout"
 import { updateInputCode } from "./inputcode/updateInputCode"
+import { fetchSubmissions } from "./submissions/fetchSubmissions"
+import { fetchSystems } from "./systems/fetchSystems"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -51,7 +53,9 @@ export default {
 						case "/api/studies":
 							return fetchStudies(request, env, corsHeaders)
 						case "/api/systems":
-							return fetchStudies(request, env, corsHeaders)
+							return fetchSystems(request, env, corsHeaders)
+						case "/api/submissions":
+							return fetchSubmissions(request, env, corsHeaders)
 						default:
 							return new Response("Invalid api", { status: 404 })
 					}
@@ -67,8 +71,9 @@ export default {
 
 			return responseError(null, "Invalid api", 404, corsHeaders)
 		} catch (err) {
-			console.error("Error", err)
-			return responseError(err, err.message, 500, corsHeaders)
+			const errorMessage = err.message || "An unknown error occurred"
+			console.log("Exception", errorMessage)
+			return responseError(err, errorMessage, 500, corsHeaders)
 		}
 	},
 }

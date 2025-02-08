@@ -11,6 +11,8 @@ export async function fetchSubmissions(client, request, env, corsHeaders) {
 
 		return responseSuccess({ submissions: response.result }, "Fetch submissions success", corsHeaders)
 	} catch (err) {
-		return responseError(err, "Exception", 401, corsHeaders)
+		const errorMessage = err.message || "An unknown error occurred"
+		console.log("Exception", errorMessage)
+		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }
