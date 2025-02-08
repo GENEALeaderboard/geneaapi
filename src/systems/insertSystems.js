@@ -7,20 +7,31 @@ export async function insertSystems(request, env, corsHeaders) {
 			return responseFailed(null, "No database found", 404, corsHeaders)
 		}
 
-		const { codes } = await request.json()
-		if (!codes) {
-			return responseFailed(null, "Invalid input", 400, corsHeaders)
+		const { newSystem } = await request.json()
+		if (!newSystem) {
+			return responseFailed(null, "New Systems not found", 400, corsHeaders)
 		}
 
-		const response = await db.prepare("UPDATE inputcode SET code = ? WHERE id = 1").bind(codes).run()
+		const requiredFields = ["name", "description", "type", "submissionid"]
+		const missingFields = requiredFields.filter((field) => !newSystem[field])
+		if (missingFields.length > 0) {
+			return responseFailed(null, `Missing fields: ${missingFields.join(", ")}`, 400, corsHeaders)
+		}
+
+		const { name, description, type, submissionid } = newSystem
+
+		const response = await db
+			.prepare("INSERT INTO systems (name, description, type, submissionid) VALUES (?, ?, ?, ?)")
+			.bind(name, description, type, submissionid)
+			.run()
 		if (!response.success) {
 			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)
 		}
 
-		return responseSuccess({}, "Input Codes updated successfully", corsHeaders)
+		return responseSuccess({}, "New systems updated successfully", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
-		console.log("Exception", errorMessage)
+		console.log("Exception", err)
 		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }

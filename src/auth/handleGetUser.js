@@ -20,7 +20,7 @@ export async function handleGetUser(request, env, corsHeaders) {
 		}
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
-		console.log("Exception", errorMessage)
+		console.log("Exception", err)
 		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }

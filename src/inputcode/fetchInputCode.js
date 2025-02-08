@@ -18,7 +18,7 @@ export async function fetchInputCode(request, env, corsHeaders) {
 		return responseSuccess(codes, "Fetch codes success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
-		console.log("Exception", errorMessage)
+		console.log("Exception", err)
 		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }

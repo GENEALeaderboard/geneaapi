@@ -16,7 +16,7 @@ export async function fetchStudies(client, request, env, corsHeaders) {
 		return responseSuccess({ codes: response.results }, "Fetch studies success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
-		console.log("Exception", errorMessage)
+		console.log("Exception", err)
 		return responseError(err, errorMessage, 401, corsHeaders)
 	}
 }

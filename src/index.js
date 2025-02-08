@@ -84,7 +84,7 @@ export default {
 			return responseError(null, "Invalid api", 404, corsHeaders)
 		} catch (err) {
 			const errorMessage = err.message || "An unknown error occurred"
-			console.log("Exception", errorMessage)
+			console.log("Exception", err)
 			return responseError(err, errorMessage, 500, corsHeaders)
 		}
 	},
