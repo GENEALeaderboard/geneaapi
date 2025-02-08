@@ -4,7 +4,7 @@ export async function fetchInputCode(request, db, corsHeaders) {
 	try {
 		const response = await db.prepare("SELECT * FROM inputcode").all()
 
-		if (!response.results) {
+		if (!response.results || response.results.length === 0) {
 			return responseFailed(null, "No inputcode found", 404, corsHeaders)
 		}
 
