@@ -17,7 +17,10 @@ export async function insertSubmission(request, db, corsHeaders) {
 		if (!response.success) {
 			return responseFailed(null, `Failed to insert submission with teamname: ${teamname}`, 400, corsHeaders)
 		}
-		return responseSuccess({ msg: "Your submission is successful" }, "Your submission is successful", corsHeaders)
+
+		const idQuery = await db.prepare("SELECT last_insert_rowid() as id").first()
+		const insertedId = idQuery?.id
+		return responseSuccess({ submitid: insertedId, msg: "Your submission is successful" }, "Your submission is successful", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)

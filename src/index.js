@@ -12,6 +12,7 @@ import { insertSystems } from "./systems/insertSystems"
 import { fetchVideos } from "./videos/fetchVideos"
 import { insertVideos } from "./videos/insertVideos"
 import { insertSubmission } from "./submissions/insertSubmission"
+import { updateSubmission } from "./submissions/updateSubmission"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -85,6 +86,8 @@ export default {
 					switch (path) {
 						case "/api/inputcode":
 							return updateInputCode(request, db, corsHeaders)
+						case "/api/submissions":
+							return updateSubmission(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
