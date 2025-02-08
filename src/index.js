@@ -45,6 +45,10 @@ export default {
 				// if (!isValid) {
 				// 	return responseError(null, "Unauthorized", 401, corsHeaders)
 				// }
+				const db = env.DB_HEMVIP
+				if (!db) {
+					return responseError(null, "No database found sssss", 404, corsHeaders)
+				}
 
 				if (menthod === "GET") {
 					switch (path) {
