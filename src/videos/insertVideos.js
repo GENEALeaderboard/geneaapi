@@ -2,25 +2,22 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function insertVideos(request, db, corsHeaders) {
 	try {
-		const { newSystem } = await request.json()
-		if (!newSystem) {
+		const { videos } = await request.json()
+		if (!videos) {
 			return responseFailed(null, "New videos not found", 400, corsHeaders)
 		}
 
-		const requiredFields = ["name", "description", "type", "submissionid"]
-		const missingFields = requiredFields.filter((field) => !newSystem[field])
-		if (missingFields.length > 0) {
-			return responseFailed(null, `Missing fields: ${missingFields.join(", ")}`, 400, corsHeaders)
-		}
+		for (const video of videos) {
+			const { inputcode, systemname, path, url, systemid } = video
 
-		const { name, description, type, submissionid } = newSystem
+			const response = await db
+				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid) VALUES (?, ?, ?, ?, ?)")
+				.bind(inputcode, systemname, path, url, systemid)
+				.run()
 
-		const response = await db
-			.prepare("INSERT INTO videos (name, description, type, submissionid) VALUES (?, ?, ?, ?)")
-			.bind(name, description, type, submissionid)
-			.run()
-		if (!response.success) {
-			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)
+			if (!response.success) {
+				return responseFailed(null, `Failed to insert video with inputcode: ${inputcode}`, 400, corsHeaders)
+			}
 		}
 
 		return responseSuccess({}, "New videos updated successfully", corsHeaders)

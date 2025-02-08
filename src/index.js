@@ -11,6 +11,7 @@ import { fetchSystems } from "./systems/fetchSystems"
 import { insertSystems } from "./systems/insertSystems"
 import { fetchVideos } from "./videos/fetchVideos"
 import { insertVideos } from "./videos/insertVideos"
+import { insertSubmission } from "./submissions/insertSubmission"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -19,6 +20,7 @@ export default {
 			"Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS, PATCH",
 			"Access-Control-Allow-Headers": "Content-Type",
 			"Access-Control-Allow-Credentials": "true",
+			"Access-Control-Max-Age": "86400",
 		}
 
 		if (request.method === "OPTIONS") {
@@ -74,6 +76,8 @@ export default {
 							return insertSystems(request, db, corsHeaders)
 						case "/api/videos":
 							return insertVideos(request, db, corsHeaders)
+						case "/api/submissions":
+							return insertSubmission(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
