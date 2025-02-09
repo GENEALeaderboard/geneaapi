@@ -20,7 +20,7 @@ export async function insertVideos(request, db, corsHeaders) {
 			}
 		}
 
-		return responseSuccess({}, "New videos updated successfully", corsHeaders)
+		return responseSuccess({}, "All videos updated successfully", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)

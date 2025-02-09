@@ -9,10 +9,11 @@ import { updateInputCode } from "./inputcode/updateInputCode"
 import { fetchSubmissions } from "./submissions/fetchSubmissions"
 import { fetchSystems } from "./systems/fetchSystems"
 import { insertSystems } from "./systems/insertSystems"
-import { fetchVideos } from "./videos/fetchVideos"
 import { insertVideos } from "./videos/insertVideos"
 import { insertSubmission } from "./submissions/insertSubmission"
 import { updateSubmission } from "./submissions/updateSubmission"
+import { insertUsers } from "./users/insertUsers"
+import { fetchVideos } from "./videos/fetchVideos"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -75,6 +76,8 @@ export default {
 					switch (path) {
 						case "/api/systems":
 							return insertSystems(request, db, corsHeaders)
+						case "/api/users":
+							return insertUsers(request, db, corsHeaders)
 						case "/api/videos":
 							return insertVideos(request, db, corsHeaders)
 						case "/api/submissions":
