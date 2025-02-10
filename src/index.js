@@ -97,6 +97,8 @@ export default {
 							return updateInputCode(request, db, corsHeaders)
 						case "/api/submissions":
 							return updateSubmission(request, db, corsHeaders)
+						case "/api/pairwise-human-likeness":
+							return validatePairwiseHumanLikeness(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
