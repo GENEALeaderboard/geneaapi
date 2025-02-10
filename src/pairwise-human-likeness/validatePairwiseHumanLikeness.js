@@ -9,40 +9,48 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 			return responseFailed(null, "CSV data is required", 400, corsHeaders)
 		}
 
-		const resultQueries = []
-		for (let index = 0; index < csv.length; index++) {
-			const row = csv[index]
-			console.log("row", row)
+		const resultQueries = await Promise.all(
+			Array.from(csv).map(async (row, index) => {
+				console.log("row", row);
 
-			const inputcode = row[0]
-			const sysA = String(row[1]).replace(/\s+/g, "")
-			const sysB = String(row[2]).replace(/\s+/g, "")
+				const inputcode = row[0];
+				const sysA = String(row[1]).replace(/\s+/g, "");
+				const sysB = String(row[2]).replace(/\s+/g, "");
 
-			console.log({ inputcode, systemname1: sysA, systemname2: sysB })
+				console.log({ inputcode, systemname1: sysA, systemname2: sysB });
 
-			const rsA = await db.prepare("SELECT * FROM videos v WHERE v.inputcode = ? AND v.systemname = ?").bind(inputcode, sysA).run()
+				// Optimized SQL query to fetch both results in one go
+				const query = `
+					SELECT * FROM videos
+					WHERE inputcode = ? AND (systemname = ? OR systemname = ?)
+				`;
 
-			if (rsA.results.length === 0) {
-				return responseFailed(null, `Video ${inputcode} in line ${index + 1} not found for: ${sysA}`, 400, corsHeaders)
-			}
+				const { results } = await db.prepare(query).bind(inputcode, sysA, sysB).run();
 
-			const rsB = await db.prepare("SELECT * FROM videos v WHERE v.inputcode = ? AND v.systemname = ?").bind(inputcode, sysB).run()
+				// Ensure both results exist
+				const rsA = results.find(row => row.systemname === sysA);
+				const rsB = results.find(row => row.systemname === sysB);
 
-			if (rsB.results.length === 0) {
-				return responseFailed(null, `Video ${inputcode} in line ${index + 1} not found for: ${sysB}`, 400, corsHeaders)
-			}
+				if (!rsA || !rsB) {
+					const missingNames = [];
+					if (!rsA) missingNames.push(sysA);
+					if (!rsB) missingNames.push(sysB);
 
-			console.log("rsB", rsB, "rsA", rsA)
+					throw responseFailed(null, `Video ${inputcode} in line ${index + 1} not found for: ${missingNames.join(", ")}`, 400, corsHeaders);
+				}
 
-			resultQueries.push({
-				inputcode: inputcode,
-				name1: sysA,
-				name2: sysB,
-				result1: rsA.results,
-				result2: rsB.results,
-				index: String(index + 1),
+				console.log("rsB", rsB, "rsA", rsA);
+
+				return {
+					inputcode: inputcode,
+					name1: sysA,
+					name2: sysB,
+					result1: [rsA], // Wrapping single object in an array to match original structure
+					result2: [rsB],
+					index: String(index + 1),
+				};
 			})
-		}
+		);
 
 		for (const { inputcode, name1, name2, result1, result2, index } of resultQueries) {
 			if (!result1 || !result2) {
