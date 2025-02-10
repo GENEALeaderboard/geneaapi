@@ -1,6 +1,6 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function validateHumanLikeness(request, db, corsHeaders) {
+export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 	try {
 		const { csv } = await request.json()
 
@@ -20,6 +20,7 @@ export async function validateHumanLikeness(request, db, corsHeaders) {
 
 				const rsA = await db.prepare("SELECT * FROM videos v WHERE v.inputcode = ? AND systemname = ?").bind(inputcode, sysA).run()
 				const rsB = await db.prepare("SELECT * FROM videos v WHERE v.inputcode = ? AND systemname = ?").bind(inputcode, sysB).run()
+				console.log("rsB", rsB, "rsA", rsA)
 
 				// const [rsA, rsB] = await Promise.all([db.collection("videos").findOne(queryA), db.collection("videos").findOne(queryB)])
 

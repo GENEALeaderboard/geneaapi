@@ -16,6 +16,7 @@ import { insertUsers } from "./users/insertUsers"
 import { fetchVideos } from "./videos/fetchVideos"
 import { fetchSystemList } from "./systems/fetchSystemList"
 import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
+import { validatePairwiseHumanLikeness } from "./pairwise-human-likeness/validatePairwiseHumanLikeness"
 
 export default {
 	async fetch(request, env, ctx) {
