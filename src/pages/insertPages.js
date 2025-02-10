@@ -7,24 +7,45 @@ export async function insertPages(request, db, corsHeaders) {
 			return responseFailed(null, "New pages not found", 400, corsHeaders)
 		}
 
+		const stmt = await db.prepare(
+			`INSERT INTO pages (type, name, question, selected, actions, options, system1, system2, video1, video2, studyid)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		)
+		const batch = []
+
 		for (const page of pages) {
-			const { type, name, question, selected, actions, options, system1, system2, video1, video2 } = page
-
-			if (!type || !name || !question || !selected || !actions || !options || !system1 || !system2 || !video1 || !video2) {
-				return responseFailed(null, "Missing required fields", 400, corsHeaders)
+			const requiredFields = [
+				"type",
+				"name",
+				"question",
+				"selected",
+				"actions",
+				"options",
+				"system1",
+				"system2",
+				"video1",
+				"video2",
+				"studyid",
+			]
+			const missingFields = requiredFields.filter((field) => !page[field])
+			if (missingFields.length > 0) {
+				console.log("page", JSON.stringify(page))
+				return responseError(null, `Missing required fields in ${missingFields.join(", ")}`, 400, corsHeaders)
 			}
 
-			const response = await db
-				.prepare("INSERT INTO pages (type, name, question, selected, actions, options, system1, system2, video1, video2) VALUES (?, ?, ?, ?, ?)")
-				.bind(type, name, question, selected, actions, options, system1, system2, video1, video2)
-				.run()
+			const { type, name, question, selected, actions, options, system1, system2, video1, video2, studyid } = page
 
-			if (!response.success) {
-				return responseFailed(null, `Failed to insert video with inputcode: ${inputcode}`, 400, corsHeaders)
-			}
+			batch.push(stmt.bind(type, name, question, selected, actions, options, system1, system2, video1, video2, studyid))
 		}
 
-		return responseSuccess({}, "All pages updated successfully", corsHeaders)
+		const batchResult = await db.batch(batch)
+		console.log(JSON.stringify(batchResult))
+		if (!batchResult) {
+			console.log(JSON.stringify(batchResult))
+			return responseFailed(JSON.stringify(batchResult), `Failed to insert pages`, 400, corsHeaders)
+		}
+
+		return responseSuccess(batchResult, "All pages updated successfully", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)

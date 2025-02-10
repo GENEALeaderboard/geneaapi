@@ -2,7 +2,6 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function insertStudies(request, db, corsHeaders) {
 	try {
-
 		const { studies } = await request.json()
 		if (!studies || !Array.isArray(studies)) {
 			return responseFailed(null, "New studies not found or invalid format", 400, corsHeaders)
@@ -13,11 +12,14 @@ export async function insertStudies(request, db, corsHeaders) {
 		const batch = []
 
 		for (const study of studies) {
-			const { status, name, time_start, type, global_actions } = study
-
-			if (!status || !name || !time_start || !type || !global_actions) {
-				throw new Error("Missing required fields in study object")
+			const requiredFields = ["status", "name", "time_start", "type", "global_actions"]
+			const missingFields = requiredFields.filter((field) => !study[field])
+			if (missingFields.length > 0) {
+				console.log("page", JSON.stringify(study))
+				return responseError(null, `Missing required fields in ${missingFields.join(", ")}`, 400, corsHeaders)
 			}
+
+			const { status, name, time_start, type, global_actions } = study
 
 			batch.push(stmt.bind(status, name, time_start, type, global_actions))
 		}
