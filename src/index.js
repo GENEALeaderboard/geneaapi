@@ -14,6 +14,8 @@ import { insertSubmission } from "./submissions/insertSubmission"
 import { updateSubmission } from "./submissions/updateSubmission"
 import { insertUsers } from "./users/insertUsers"
 import { fetchVideos } from "./videos/fetchVideos"
+import { fetchSystemList } from "./systems/fetchSystemList"
+import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -65,8 +67,12 @@ export default {
 							return fetchStudies(request, db, corsHeaders)
 						case "/api/systems":
 							return fetchSystems(request, db, corsHeaders)
+						case "/api/system-list":
+							return fetchSystemList(request, db, corsHeaders)
 						case "/api/submissions":
 							return fetchSubmissions(request, db, corsHeaders)
+						case "/api/submission-filtered":
+							return fetchSubmissionFiltered(request, db, corsHeaders)
 						case "/api/videos":
 							return fetchVideos(request, db, corsHeaders)
 						default:

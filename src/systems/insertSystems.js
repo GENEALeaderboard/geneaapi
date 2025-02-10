@@ -4,12 +4,14 @@ export async function insertSystems(request, db, corsHeaders) {
 	try {
 		const { newSystem } = await request.json()
 		if (!newSystem) {
+			console.log("newSystem", newSystem)
 			return responseFailed(null, "New Systems not found", 400, corsHeaders)
 		}
 
-		const requiredFields = ["name", "description", "type", "submissionid"]
+		const requiredFields = ["name", "description", "type"]
 		const missingFields = requiredFields.filter((field) => !newSystem[field])
 		if (missingFields.length > 0) {
+			console.log("missingFields", missingFields)
 			return responseFailed(null, `Missing fields: ${missingFields.join(", ")}`, 400, corsHeaders)
 		}
 
@@ -23,7 +25,7 @@ export async function insertSystems(request, db, corsHeaders) {
 			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)
 		}
 
-		return responseSuccess({}, "New systems updated successfully", corsHeaders)
+		return responseSuccess({}, "New system created successfully", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)
