@@ -52,3 +52,25 @@ VALUES (
         'https://videos/original/BA/2_scott_0_1_1-segment_4.mp4',
         '678d04de3febc50fe3c557b6'
     );
+-- submission
+INSERT INTO "submission" (email, teamname, teamid)
+VALUES (
+        'hmthanhgm@gmail.com',
+        'Thanh Hoang-Minh',
+        'hmthanh'
+    ),
+    (
+        'petsonalai@gmail.com',
+        'Petsonal',
+        'petsonal'
+    ),
+    (
+        "zeroyy@gmail.com",
+        "Youngwoo Yoon",
+        "zeroyy"
+    ),
+    (
+        'millionscopes@gmail.com',
+        'MillionScope',
+        'millionscope'
+    );

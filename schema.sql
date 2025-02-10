@@ -41,6 +41,7 @@ CREATE TABLE "videos" (
     url TEXT NOT NULL,
     systemid CHAR(24) NOT NULL
 );
+-- submission
 CREATE TABLE "submission" (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email VARCHAR(255) NOT NULL,
@@ -48,30 +49,19 @@ CREATE TABLE "submission" (
     teamname VARCHAR(255) NOT NULL,
     userid CHAR(24) NOT NULL
 );
-INSERT INTO "submission" (email, teamname, userid)
-VALUES (
-        'zeroyy@gmail.com',
-        'Youngwoo Yoon',
-        '66a1f25304700478c83db822'
-    );
-INSERT INTO "submission" (email, teamname, teamid)
-VALUES (
-        'hmthanhgm@gmail.com',
-        'Thanh Hoang-Minh',
-        'hmthanh'
-    ),
-    (
-        'petsonalai@gmail.com',
-        'Petsonal',
-        'petsonal'
-    ),
-    (
-        "zeroyy@gmail.com",
-        "Youngwoo Yoon",
-        "zeroyy"
-    ),
-    (
-        'millionscopes@gmail.com',
-        'MillionScope',
-        'millionscope'
-    );
+-- comparisons
+CREATE TABLE "pages" (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    question TEXT NOT NULL,
+    selected JSON NOT NULL,
+    actions JSON NOT NULL,
+    options JSON NOT NULL,
+    system1 TEXT NOT NULL,
+    system2 TEXT NOT NULL,
+    video1 INTEGER NOT NULL,
+    video2 INTEGER NOT NULL
+);
+-- 
+CREATE VIEW "user_studies" AS SELECT * FROM studies s, configs c, pages p WHERE s.type = c.type and p.studyid = s.id;

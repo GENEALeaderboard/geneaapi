@@ -55,7 +55,10 @@ export async function handleGithubCallback(request, env, corsHeaders) {
 	}
 
 	const userData = await userResponse.json()
-	console.log("userData", JSON.stringify(userData))
+	if (!userData) {
+		console.log("userData", JSON.stringify(userData))
+		return responseFailed(null, "Failed to get Github user", 500, corsHeaders)
+	}
 
 	// if (!userData) {
 	// 	// If user does not exist, insert new user and account
