@@ -17,6 +17,8 @@ import { fetchVideos } from "./videos/fetchVideos"
 import { fetchSystemList } from "./systems/fetchSystemList"
 import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
 import { validatePairwiseHumanLikeness } from "./pairwise-human-likeness/validatePairwiseHumanLikeness"
+import { createPairwiseHumanLikeness } from "./pairwise-human-likeness/createPairwiseHumanLikeness"
+import { fetchConfigs } from "./configs/fetchConfigs"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -66,6 +68,8 @@ export default {
 							return fetchInputCode(request, db, corsHeaders)
 						case "/api/studies":
 							return fetchStudies(request, db, corsHeaders)
+						case "/api/configs":
+							return fetchConfigs(request, db, corsHeaders)
 						case "/api/systems":
 							return fetchSystems(request, db, corsHeaders)
 						case "/api/system-list":
@@ -89,6 +93,8 @@ export default {
 							return insertVideos(request, db, corsHeaders)
 						case "/api/submissions":
 							return insertSubmission(request, db, corsHeaders)
+						case "/api/pairwise-human-likeness":
+							return createPairwiseHumanLikeness(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}

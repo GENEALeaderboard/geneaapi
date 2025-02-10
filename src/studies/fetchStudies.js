@@ -2,7 +2,7 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchStudies(request, db, corsHeaders) {
 	try {
-		const configs = await db.prepare("SELECT * FROM configs").first()
+		const configs = await db.prepare("SELECT * FROM studies").first()
 		if (!configs) {
 			return responseFailed(null, "No study configs found", 404, corsHeaders)
 		}
