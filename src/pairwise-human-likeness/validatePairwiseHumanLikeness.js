@@ -3,13 +3,16 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 	try {
 		const { csv } = await request.json()
-
 		if (!csv) {
 			console.log("request", request)
 			return responseFailed(null, "CSV data is required", 400, corsHeaders)
 		}
 
-		const resultQueries = []
+		const query = `SELECT * FROM videos
+			WHERE inputcode = ? AND (systemname = ? OR systemname = ?)`
+		const stmt = await db.prepare(query)
+		const batch = []
+		const data = []
 		for (let index = 0; index < csv.length; index++) {
 			const row = csv[index]
 
@@ -17,38 +20,39 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 			const sysA = String(row[1]).replace(/\s+/g, "")
 			const sysB = String(row[2]).replace(/\s+/g, "")
 
-			const query = `SELECT * FROM videos
-			WHERE inputcode = ? AND (systemname = ? OR systemname = ?)`
-
-			const { results } = await db.prepare(query).bind(inputcode, sysA, sysB).run()
-			if (results.length <= 1) {
-				console.log({ inputcode, sysA, sysB })
-				console.log("results", results)
-				return responseFailed(null, `Video ${inputcode} in line ${index + 1} not found for: ${sysB}`, 400, corsHeaders)
-			}
-
-			resultQueries.push({
-				inputcode: inputcode,
-				name1: sysA,
-				name2: sysB,
-				result1: results,
-				result2: results,
-				index: String(index + 1),
-			})
+			batch.push(stmt.bind(inputcode, sysA, sysB))
+			data.push({ inputcode: inputcode, sysA: sysA, sysB: sysB })
 		}
 
-		for (const { inputcode, name1, name2, result1, result2, index } of resultQueries) {
-			if (!result1 || !result2) {
-				let missingNames = []
-				if (!result1) missingNames.push(name1)
-				if (!result2) missingNames.push(name2)
+		const batchResults = await db.batch(batch)
+		if (csv.length !== batchResults.length || csv.length !== data.length) {
+			console.log("csv", csv)
+			console.log("batchResults", batchResults)
+			return responseFailed(null, "Failed validate result", 400, corsHeaders)
+		}
 
-				console.log("result1", result1, "result2", result2)
+		for (let index = 0; index < data.length; index++) {
+			const { inputcode, sysA, sysB } = data[index]
+			const { results } = batchResults[index]
+
+			if (results.length <= 1) {
+				const result = results[0]
+				let missingNames = []
+				if (result.systemname === sysA) {
+					missingNames.push(sysB)
+				} else {
+					console.log("results", JSON.stringify(results))
+				}
+				if (result.systemname === sysB) {
+					missingNames.push(sysA)
+				} else {
+					console.log("results", JSON.stringify(results))
+				}
 				return responseFailed(null, `Video ${inputcode} in line ${index} not found for: ${missingNames.join(", ")}`, 400, corsHeaders)
 			}
 		}
 
-		return responseSuccess({}, "Validate success", corsHeaders)
+		return responseSuccess({}, "Validate success, continue with generate studies", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)

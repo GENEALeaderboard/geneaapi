@@ -70,8 +70,6 @@ export default {
 							return fetchInputCode(request, db, corsHeaders)
 						case "/api/studies":
 							return fetchStudies(request, db, corsHeaders)
-						case "/api/study2":
-							return insertStudies(request, db, corsHeaders)
 						case "/api/configs":
 							return fetchConfigs(request, db, corsHeaders)
 						case "/api/systems":
