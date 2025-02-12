@@ -22,6 +22,7 @@ import { fetchConfigs } from "./configs/fetchConfigs"
 import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
 import { fetchAllStudies } from "./studies/fetchAllStudies"
+import { fetchParticipants } from "./participants/fetchParticipants"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -69,6 +70,8 @@ export default {
 					switch (path) {
 						case "/api/inputcode":
 							return fetchInputCode(request, db, corsHeaders)
+						case "/api/participants":
+							return fetchParticipants(request, db, corsHeaders)
 						case "/api/study":
 							return fetchStudies(request, db, corsHeaders)
 						case "/api/studies":
