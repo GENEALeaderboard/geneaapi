@@ -20,6 +20,7 @@ workers_dev = true
 ALLOWED_ORIGIN = "https://genealeaderboard.github.io"
 GITHUB_CLIENT_ID = "Ov23li4Jpr0iorMBiOPt"
 ENVIRONMENT = "production"
+NODE_VERSION = "22.14.0"
 
 [dev]
 port = 8031
