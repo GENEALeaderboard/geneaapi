@@ -8,20 +8,60 @@ export async function insertStudies(request, db, corsHeaders) {
 		}
 
 		const studiesInsertedIds = []
-		const stmt = await db.prepare("INSERT INTO studies (status, name, time_start, type, global_actions) VALUES (?, ?, ?, ?, ?)")
+		const stmt = await db.prepare(`INSERT INTO studies (status, name, time_start, type, global_actions,
+			file_created, prolific_sessionid, prolific_studyid, prolific_userid, completion_code, fail_code)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 		const batch = []
 
 		for (const study of studies) {
-			const requiredFields = ["status", "name", "time_start", "type", "global_actions"]
+			const requiredFields = [
+				"status",
+				"name",
+				"time_start",
+				"type",
+				"global_actions",
+				"file_created",
+				"prolific_sessionid",
+				"prolific_studyid",
+				"prolific_userid",
+				"completion_code",
+				"fail_code",
+			]
 			const missingFields = requiredFields.filter((field) => !study[field])
 			if (missingFields.length > 0) {
 				console.log("page", JSON.stringify(study))
 				return responseError(null, `Missing required fields in ${missingFields.join(", ")}`, 400, corsHeaders)
 			}
 
-			const { status, name, time_start, type, global_actions } = study
+			const {
+				status,
+				name,
+				time_start,
+				type,
+				global_actions,
+				file_created,
+				prolific_sessionid,
+				prolific_studyid,
+				prolific_userid,
+				completion_code,
+				fail_code,
+			} = study
 
-			batch.push(stmt.bind(status, name, time_start, type, global_actions))
+			batch.push(
+				stmt.bind(
+					status,
+					name,
+					time_start,
+					type,
+					global_actions,
+					file_created,
+					prolific_sessionid,
+					prolific_studyid,
+					prolific_userid,
+					completion_code,
+					fail_code
+				)
+			)
 		}
 
 		const batchResult = await db.batch(batch)

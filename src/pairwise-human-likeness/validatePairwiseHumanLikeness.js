@@ -52,7 +52,7 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 			}
 		}
 
-		return responseSuccess({}, "Validate success, continue with generate studies", corsHeaders)
+		return responseSuccess({}, "Validate success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)

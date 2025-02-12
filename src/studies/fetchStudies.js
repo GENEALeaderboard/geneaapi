@@ -2,7 +2,7 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchStudies(request, db, corsHeaders) {
 	try {
-		const configs = await db.prepare("SELECT * FROM studies").first()
+		const configs = await db.prepare("SELECT * FROM configs").first()
 		if (!configs) {
 			return responseFailed(null, "No study configs found", 404, corsHeaders)
 		}
@@ -12,7 +12,7 @@ export async function fetchStudies(request, db, corsHeaders) {
 			}
 		})
 
-		const rsStudiesList = await db.prepare("SELECT * FROM studies").all()
+		const rsStudiesList = await db.prepare("SELECT * FROM studies s, configs c WHERE c.type = s.type").all()
 		if (rsStudiesList.length === 0) {
 			return responseFailed(null, "No studies found", 404, corsHeaders)
 		}
