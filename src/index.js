@@ -21,6 +21,7 @@ import { createPairwiseHumanLikeness } from "./pairwise-human-likeness/createPai
 import { fetchConfigs } from "./configs/fetchConfigs"
 import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
+import { fetchAllStudies } from "./studies/fetchAllStudies"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -68,8 +69,10 @@ export default {
 					switch (path) {
 						case "/api/inputcode":
 							return fetchInputCode(request, db, corsHeaders)
-						case "/api/studies":
+						case "/api/study":
 							return fetchStudies(request, db, corsHeaders)
+						case "/api/studies":
+							return fetchAllStudies(request, db, corsHeaders)
 						case "/api/configs":
 							return fetchConfigs(request, db, corsHeaders)
 						case "/api/systems":
