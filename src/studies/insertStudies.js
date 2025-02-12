@@ -14,16 +14,7 @@ export async function insertStudies(request, db, corsHeaders) {
 		const batch = []
 
 		for (const study of studies) {
-			const requiredFields = [
-				"status",
-				"name",
-				"time_start",
-				"type",
-				"global_actions",
-				"file_created",
-				"completion_code",
-				"fail_code",
-			]
+			const requiredFields = ["status", "name", "time_start", "type", "global_actions", "file_created", "completion_code", "fail_code"]
 			const missingFields = requiredFields.filter((field) => !study[field])
 			if (missingFields.length > 0) {
 				console.log("page", JSON.stringify(study))
