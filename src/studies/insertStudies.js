@@ -21,9 +21,6 @@ export async function insertStudies(request, db, corsHeaders) {
 				"type",
 				"global_actions",
 				"file_created",
-				"prolific_sessionid",
-				"prolific_studyid",
-				"prolific_userid",
 				"completion_code",
 				"fail_code",
 			]
