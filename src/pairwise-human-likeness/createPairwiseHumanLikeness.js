@@ -57,8 +57,6 @@ export async function createPairwiseHumanLikeness(request, db, corsHeaders) {
 					.find({ _id: { $in: pageIds } })
 					.toArray()
 
-				pages.unshift(firstPage)
-				pages.push(lastPage)
 				console.log("Final Pages:", pages)
 
 				return {
