@@ -9,12 +9,9 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
-		"@cloudflare/d1": "^1.4.1",
-		"@cloudflare/vitest-pool-workers": "^0.5.16",
+		"@cloudflare/vitest-pool-workers": "^0.6.12",
 		"@cloudflare/workers-types": "^4.20250204.0",
-		"miniflare": "^3.20250129.0",
-		"vitest": "2.1.2",
-		"wrangler": "^3.80.2"
+		"wrangler": "^3.107.3"
 	},
 	"dependencies": {
 		"@tsndr/cloudflare-worker-jwt": "^3.1.3"
