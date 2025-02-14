@@ -2,7 +2,7 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchVideos(request, db, corsHeaders) {
 	try {
-		const response = await db.prepare("SELECT * FROM videos").all()
+		const response = await db.prepare("SELECT * FROM videos WHERE type = 'video'").all()
 
 		if (!response.results) {
 			return responseFailed(null, "No videos found", 404, corsHeaders)

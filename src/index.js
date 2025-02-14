@@ -23,6 +23,8 @@ import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
 import { fetchAllStudies } from "./studies/fetchAllStudies"
 import { fetchParticipants } from "./participants/fetchParticipants"
+import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
+import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -88,6 +90,8 @@ export default {
 							return fetchSubmissionFiltered(request, db, corsHeaders)
 						case "/api/videos":
 							return fetchVideos(request, db, corsHeaders)
+						case "/api/attention-check":
+							return fetchAttentionCheck(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
@@ -99,6 +103,8 @@ export default {
 							return insertUsers(request, db, corsHeaders)
 						case "/api/videos":
 							return insertVideos(request, db, corsHeaders)
+						case "/api/attention-check":
+							return insertAttentionCheck(request, db, corsHeaders)
 						case "/api/pages":
 							return insertPages(request, db, corsHeaders)
 						case "/api/studies":
