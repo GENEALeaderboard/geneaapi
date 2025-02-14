@@ -2,17 +2,17 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function insertAttentionCheck(request, db, corsHeaders) {
 	try {
-		const { videos } = await request.json()
-		if (!videos) {
-			return responseFailed(null, "New videos not found", 400, corsHeaders)
+		const { checks } = await request.json()
+		if (!checks) {
+			return responseFailed(null, "Videos not found", 400, corsHeaders)
 		}
 
-		for (const video of videos) {
-			const { inputcode, systemname, path, url, systemid } = video
+		for (const check of checks) {
+			const { inputcode, path, url } = check
 
 			const response = await db
-				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?)")
-				.bind(inputcode, systemname, path, url, systemid, "check")
+				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
+				.bind(inputcode, "AttentionCheck", path, url, 0, "check")
 				.run()
 
 			if (!response.success) {
