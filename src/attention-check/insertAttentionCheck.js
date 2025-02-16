@@ -2,13 +2,13 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function insertAttentionCheck(request, db, corsHeaders) {
 	try {
-		const { checks } = await request.json()
-		if (!checks) {
+		const { videos } = await request.json()
+		if (!videos) {
 			return responseFailed(null, "Videos not found", 400, corsHeaders)
 		}
 
-		for (const check of checks) {
-			const { inputcode, path, url } = check
+		for (const video of videos) {
+			const { inputcode, path, url } = video
 
 			const response = await db
 				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
