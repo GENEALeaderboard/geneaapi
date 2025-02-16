@@ -57,7 +57,6 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2))
 		}
 		const attentionCheckResults = await db.batch(batchAttentionCheck)
-		console.log("attentionCheckResults", JSON.stringify(attentionCheckResults))
 		const successAll = Array.from(attentionCheckResults).every((result) => result.success)
 
 		if (successAll) {
