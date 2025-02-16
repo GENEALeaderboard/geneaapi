@@ -4,23 +4,67 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 	try {
 		const { videos } = await request.json()
 		if (!videos) {
-			return responseFailed(null, "Videos not found", 400, corsHeaders)
+			console.log("videos", videos)
+			return responseFailed(null, "Video meta data not found", 400, corsHeaders)
 		}
 
-		for (const video of videos) {
+		const stmt = await db.prepare(`INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)`)
+		const batch = Array.from(videos).map((video) => {
 			const { inputcode, path, url } = video
+			return stmt.bind(inputcode, "AttentionCheck", path, url, 0, "check")
+		})
+		const videoResults = await db.batch(batch)
+		const insertedIds = videoResults.map((result) => result.meta.last_row_id)
 
-			const response = await db
-				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
-				.bind(inputcode, "AttentionCheck", path, url, 0, "check")
-				.run()
-
-			if (!response.success) {
-				return responseFailed(null, `Failed to insert video with inputcode: ${inputcode}`, 400, corsHeaders)
-			}
+		if (insertedIds.length !== videos.length) {
+			console.log("videoResults", JSON.stringify(videoResults))
+			return responseFailed(null, `Failed to insert video`, 400, corsHeaders)
 		}
 
-		return responseSuccess({}, "All videos updated successfully", corsHeaders)
+		const pairAttentionCheck = {}
+		for (let i = 0; i < videos.length; i++) {
+			const { path, url, expectedVote, idx } = videos[i]
+			const videoid = insertedIds[i]
+			if (!pairAttentionCheck[idx]) {
+				pairAttentionCheck[idx] = []
+			}
+			pairAttentionCheck[idx].push({ path, url, expectedVote, videoid })
+		}
+
+		const stmtAttentionCheck = await db.prepare(
+			`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2)
+			VALUES (?, ?, ?, ?, ?, ?, ?)`
+		)
+		console.log("pairAttentionCheck", pairAttentionCheck)
+		const batchAttentionCheck = []
+		for (let [idx, attentionCheck] of Object.entries(pairAttentionCheck)) {
+			if (attentionCheck.length !== 2) {
+				console.log("attentionCheck", attentionCheck)
+				return responseFailed(null, `Attention check meta data not found for idx: ${idx}`, 400, corsHeaders)
+			}
+			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1 } = attentionCheck[0]
+			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2 } = attentionCheck[1]
+
+			let expectedVote = expectedVote1
+			if (expectedVote1 === "Reference") {
+				expectedVote = expectedVote2
+			} else if (expectedVote2 !== "Reference") {
+				console.log("attentionCheck", JSON.stringify(attentionCheck))
+				console.log("expectedVote2", expectedVote2)
+				return responseFailed(null, `Expected vote not found for idx: ${idx}`, 400, corsHeaders)
+			}
+
+			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2))
+		}
+		const attentionCheckResults = await db.batch(batchAttentionCheck)
+		console.log("attentionCheckResults", JSON.stringify(attentionCheckResults))
+		const successAll = Array.from(attentionCheckResults).every((result) => result.success)
+
+		if (successAll) {
+			return responseSuccess({}, "All attention check updated successfully", corsHeaders)
+		} else {
+			return responseFailed(null, "Failed to insert attention check", 400, corsHeaders)
+		}
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.log("Exception", err)
