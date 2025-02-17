@@ -24,6 +24,7 @@ export async function fetchAllStudies(request, db, corsHeaders) {
 			return responseFailed(null, "Videos length does not match pages", 400, corsHeaders)
 		}
 
+		console.log("combineStudiesWithPagesAndVideos.studies", JSON.stringify(studies))
 		// Combine studies with their pages and videos
 		const studiesWithPages = combineStudiesWithPagesAndVideos(studies, pageDictByStudies, videoDict)
 
@@ -78,10 +79,13 @@ async function fetchVideosForPages(db, pagesDict) {
 
 // Helper function to combine studies with their pages and videos
 function combineStudiesWithPagesAndVideos(studies, pagesDict, videosDict) {
-	return studies.map((study) => {
+	if (!studies || !pagesDict || !videosDict) {
+		return null
+	}
+	return Array.from(studies).map((study) => {
 		const pages = pagesDict[study.id]
 
-		const pagesWithVideos = pages.map((page) => ({
+		const pagesWithVideos = (pages || []).map((page) => ({
 			...page,
 			video1: videosDict[page.video1],
 			video2: videosDict[page.video2],
