@@ -8,8 +8,8 @@ export async function insertPages(request, db, corsHeaders) {
 		}
 
 		const stmt = await db.prepare(
-			`INSERT INTO pages (type, name, question, selected, actions, options, system1, system2, video1, video2, studyid)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			`INSERT INTO pages (type, name, question, selected, actions, options, system1, system2, video1, video2, studyid, expected_vote)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		)
 		const batch = []
 
@@ -26,6 +26,7 @@ export async function insertPages(request, db, corsHeaders) {
 				"video1",
 				"video2",
 				"studyid",
+				"expected_vote",
 			]
 			const missingFields = requiredFields.filter((field) => !page[field])
 			if (missingFields.length > 0) {
@@ -33,9 +34,9 @@ export async function insertPages(request, db, corsHeaders) {
 				return responseError(null, `Missing required fields in ${missingFields.join(", ")}`, 400, corsHeaders)
 			}
 
-			const { type, name, question, selected, actions, options, system1, system2, video1, video2, studyid } = page
+			const { type, name, question, selected, actions, options, system1, system2, video1, video2, studyid, expected_vote } = page
 
-			batch.push(stmt.bind(type, name, question, selected, actions, options, system1, system2, video1, video2, studyid))
+			batch.push(stmt.bind(type, name, question, selected, actions, options, system1, system2, video1, video2, studyid, expected_vote))
 		}
 
 		const batchResult = await db.batch(batch)
