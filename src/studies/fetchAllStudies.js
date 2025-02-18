@@ -24,7 +24,6 @@ export async function fetchAllStudies(request, db, corsHeaders) {
 			return responseFailed(null, "Videos length does not match pages", 400, corsHeaders)
 		}
 
-		console.log("combineStudiesWithPagesAndVideos.studies", JSON.stringify(studies))
 		// Combine studies with their pages and videos
 		const studiesWithPages = combineStudiesWithPagesAndVideos(studies, pageDictByStudies, videoDict)
 
