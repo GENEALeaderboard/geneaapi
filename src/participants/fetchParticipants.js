@@ -4,8 +4,10 @@ export async function fetchParticipants(request, db, corsHeaders) {
 	try {
 		const { results } = await db
 			.prepare(
-				`SELECT * FROM studies WHERE prolific_userid is not NULL
-			GROUP BY prolific_userid`
+				`SELECT *
+				FROM studies
+				WHERE prolific_userid IS NOT NULL AND prolific_userid <> ''
+				GROUP BY prolific_userid;`
 			)
 			.all()
 
