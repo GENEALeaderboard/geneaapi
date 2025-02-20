@@ -1,8 +1,17 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function fetchMismatch(request, db, corsHeaders) {
+export async function fetchVideoList(request, db, corsHeaders) {
 	try {
-		const response = await db.prepare("SELECT * FROM videos WHERE type = 'mismatch'").all()
+		const url = new URL(request.url)
+		const params = new URLSearchParams(url.search)
+
+		const type = params.get("type")
+
+		if (!type) {
+			return responseFailed(null, "Type is required", 404, corsHeaders)
+		}
+
+		const response = await db.prepare("SELECT * FROM videos WHERE type = ?").bind(type).run()
 
 		if (!response.results) {
 			return responseFailed(null, "No videos found", 404, corsHeaders)

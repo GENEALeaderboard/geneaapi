@@ -8,11 +8,11 @@ export async function insertVideos(request, db, corsHeaders) {
 		}
 
 		for (const video of videos) {
-			const { inputcode, systemname, path, url, systemid } = video
+			const { inputcode, systemname, path, url, systemid, type } = video
 
 			const response = await db
 				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
-				.bind(inputcode, systemname, path, url, systemid, "video")
+				.bind(inputcode, systemname, path, url, systemid, type)
 				.run()
 
 			if (!response.success) {

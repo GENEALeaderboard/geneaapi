@@ -27,6 +27,7 @@ import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
 import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { fetchMismatch } from "./mismatch/fetchMismatch"
+import { fetchVideoList } from "./videos/fetchVideoList"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -92,6 +93,8 @@ export default {
 							return fetchSubmissionFiltered(request, db, corsHeaders)
 						case "/api/videos":
 							return fetchVideos(request, db, corsHeaders)
+						case "/api/video-list":
+							return fetchVideoList(request, db, corsHeaders)
 						case "/api/mismatch":
 							return fetchMismatch(request, db, corsHeaders)
 						case "/api/attention-check":
