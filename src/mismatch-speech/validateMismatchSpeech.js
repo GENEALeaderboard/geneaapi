@@ -1,6 +1,6 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
+export async function validateMismatchSpeech(request, db, corsHeaders) {
 	try {
 		const { csv } = await request.json()
 		if (!csv) {

@@ -28,6 +28,8 @@ import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { fetchMismatch } from "./mismatch/fetchMismatch"
 import { fetchVideoList } from "./videos/fetchVideoList"
+import { validateMismatchSpeech } from "./mismatch-speech/validateMismatchSpeech"
+import { createMismatchSpeech } from "./mismatch-speech/createMismatchSpeech"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -122,6 +124,8 @@ export default {
 							return insertSubmission(request, db, corsHeaders)
 						case "/api/pairwise-humanlikeness":
 							return createPairwiseHumanLikeness(request, db, corsHeaders)
+						case "/api/mismatch-speech":
+							return createMismatchSpeech(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
@@ -133,8 +137,8 @@ export default {
 							return updateSubmission(request, db, corsHeaders)
 						case "/api/pairwise-humanlikeness":
 							return validatePairwiseHumanLikeness(request, db, corsHeaders)
-						case "/api/pairwise-humanlikeness":
-							return validatePairwiseHumanLikeness(request, db, corsHeaders)
+						case "/api/mismatch-speech":
+							return validateMismatchSpeech(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}

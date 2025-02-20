@@ -1,6 +1,6 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-export async function createPairwiseHumanLikeness(request, db, corsHeaders) {
+export async function createMismatchSpeech(request, db, corsHeaders) {
 	try {
 		const { studiesCSV, systemType: studyType, videos } = await request.json()
 
