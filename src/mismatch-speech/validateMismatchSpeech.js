@@ -14,7 +14,7 @@ export async function validateMismatchSpeech(request, db, corsHeaders) {
 		const query2 = `SELECT * FROM videos
 			WHERE systemname = ? AND inputcode = ? AND type = 'mismatch-speech'`
 		const stmt1 = await db.prepare(query1)
-		const stmt2 = await db.prepare(query1)
+		const stmt2 = await db.prepare(query2)
 		const batch1 = []
 		const batch2 = []
 		const data = []
@@ -31,32 +31,31 @@ export async function validateMismatchSpeech(request, db, corsHeaders) {
 			data.push({ inputcode1: inputcode1, systemname: systemname, inputcode2: inputcode2 })
 		}
 
-		const batchResults = await db.batch(batch1)
-		if (csv.length !== batchResults.length || csv.length !== data.length) {
-			console.log("csv", csv)
-			console.log("batchResults", batchResults)
+		const batchResults1 = await db.batch(batch1)
+		if (csv.length !== batchResults1.length || csv.length !== data.length) {
+			console.log("csv1", csv)
+			console.log("batchResults1", batchResults1)
 			return responseFailed(null, "Failed validate result", 400, corsHeaders)
 		}
+		const batchResults2 = await db.batch(batch2)
+		if (csv.length !== batchResults2.length || csv.length !== data.length) {
+			console.log("csv2", csv)
+			console.log("batchResults2", batchResults2)
+			return responseFailed(null, "Failed validate result", 400, corsHeaders)
+		}
+		const resultItems1 = batchResults1.map((item) => item.results)
+		const resultItems2 = batchResults2.map((item) => item.results)
 
 		for (let index = 0; index < data.length; index++) {
 			const { inputcode1, systemname, inputcode2 } = data[index]
-			const { results } = batchResults[index]
-			console.log("batchResults", JSON.stringify(batchResults))
 
-			if (results.length <= 1) {
-				const result = results[0]
-				let missingNames = []
-				if (result.inputcode1 === inputcode1) {
-					missingNames.push(inputcode1)
-				} else {
-					console.log("results", JSON.stringify(results))
-				}
-				if (result.inputcode2 === inputcode2) {
-					missingNames.push(inputcode2)
-				} else {
-					console.log("results", JSON.stringify(results))
-				}
-				return responseFailed(null, `Video ${systemname} in line ${index + 1} not found for: ${missingNames.join(", ")}`, 400, corsHeaders)
+			if (resultItems1[index].length <= 0) {
+				console.log("resultItems1", JSON.stringify(resultItems1))
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode1}`, 400, corsHeaders)
+			}
+			if (resultItems2[index].length <= 0) {
+				console.log("resultItems2", JSON.stringify(resultItems2))
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode2}`, 400, corsHeaders)
 			}
 		}
 
