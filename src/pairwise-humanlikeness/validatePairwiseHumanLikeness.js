@@ -2,6 +2,7 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 	try {
+		const videoType = "origin"
 		const { csv } = await request.json()
 		if (!csv) {
 			console.log("request", request)
@@ -9,7 +10,7 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 		}
 
 		const query = `SELECT * FROM videos
-			WHERE inputcode = ? AND (systemname = ? OR systemname = ?)`
+			WHERE inputcode = ? AND (systemname = ? OR systemname = ?) AND type = ?`
 		const stmt = await db.prepare(query)
 		const batch = []
 		const data = []
@@ -20,7 +21,7 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 			const sysA = String(row[1]).replace(/\s+/g, "")
 			const sysB = String(row[2]).replace(/\s+/g, "")
 
-			batch.push(stmt.bind(inputcode, sysA, sysB))
+			batch.push(stmt.bind(inputcode, sysA, sysB, videoType))
 			data.push({ inputcode: inputcode, sysA: sysA, sysB: sysB })
 		}
 
@@ -34,7 +35,6 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 		for (let index = 0; index < data.length; index++) {
 			const { inputcode, sysA, sysB } = data[index]
 			const { results } = batchResults[index]
-
 			if (results.length <= 1) {
 				const result = results[0]
 				let missingNames = []
@@ -48,7 +48,8 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 				} else {
 					console.log("results", JSON.stringify(results))
 				}
-				return responseFailed(null, `Video ${inputcode} in line ${index} not found for: ${missingNames.join(", ")}`, 400, corsHeaders)
+
+				return responseFailed(null, `Video ${inputcode} in line ${index + 1} not found for: ${missingNames.join(", ")}`, 400, corsHeaders)
 			}
 		}
 

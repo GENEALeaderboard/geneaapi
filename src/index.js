@@ -1,35 +1,37 @@
-import { responseError, responseFailed } from "./response"
-import { isValidateToken } from "./validateToken"
-import { fetchStudies } from "./studies/fetchStudies"
-import { fetchInputCode } from "./inputcode/fetchInputCode"
-import { handleGithubCallback } from "./auth/handleGithubCallback"
-import { handleGetUser } from "./auth/handleGetUser"
-import { handleLogout } from "./auth/handleLogout"
-import { updateInputCode } from "./inputcode/updateInputCode"
-import { fetchSubmissions } from "./submissions/fetchSubmissions"
-import { fetchSystems } from "./systems/fetchSystems"
-import { insertSystems } from "./systems/insertSystems"
-import { insertVideos } from "./videos/insertVideos"
-import { insertSubmission } from "./submissions/insertSubmission"
-import { updateSubmission } from "./submissions/updateSubmission"
-import { insertUsers } from "./users/insertUsers"
-import { fetchVideos } from "./videos/fetchVideos"
-import { fetchSystemList } from "./systems/fetchSystemList"
-import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
-import { validatePairwiseHumanLikeness } from "./pairwise-humanlikeness/validatePairwiseHumanLikeness"
-import { createPairwiseHumanLikeness } from "./pairwise-humanlikeness/createPairwiseHumanLikeness"
+import { fetchAllStudies } from "./studies/fetchAllStudies"
+import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
 import { fetchConfigs } from "./configs/fetchConfigs"
+import { fetchInputCode } from "./inputcode/fetchInputCode"
+import { fetchMismatch } from "./mismatch/fetchMismatch"
+import { fetchParticipants } from "./participants/fetchParticipants"
+import { fetchStudies } from "./studies/fetchStudies"
+import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
+import { fetchSubmissions } from "./submissions/fetchSubmissions"
+import { fetchSystemList } from "./systems/fetchSystemList"
+import { fetchSystems } from "./systems/fetchSystems"
+import { fetchVideoList } from "./videos/fetchVideoList"
+import { fetchVideos } from "./videos/fetchVideos"
+
+import { handleGetUser } from "./auth/handleGetUser"
+import { handleGithubCallback } from "./auth/handleGithubCallback"
+import { handleLogout } from "./auth/handleLogout"
+
+import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
+import { insertMismatch } from "./mismatch/insertMismatch"
 import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
-import { fetchAllStudies } from "./studies/fetchAllStudies"
-import { fetchParticipants } from "./participants/fetchParticipants"
-import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
-import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
-import { insertMismatch } from "./mismatch/insertMismatch"
-import { fetchMismatch } from "./mismatch/fetchMismatch"
-import { fetchVideoList } from "./videos/fetchVideoList"
+import { insertSubmission } from "./submissions/insertSubmission"
+import { insertSystems } from "./systems/insertSystems"
+import { insertUsers } from "./users/insertUsers"
+import { insertVideos } from "./videos/insertVideos"
+
+import { isValidateToken } from "./validateToken"
+import { responseError, responseFailed } from "./response"
+import { updateInputCode } from "./inputcode/updateInputCode"
+import { updateSubmission } from "./submissions/updateSubmission"
+
 import { validateMismatchSpeech } from "./mismatch-speech/validateMismatchSpeech"
-import { createMismatchSpeech } from "./mismatch-speech/createMismatchSpeech"
+import { validatePairwiseHumanLikeness } from "./pairwise-humanlikeness/validatePairwiseHumanLikeness"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -122,10 +124,10 @@ export default {
 							return insertStudies(request, db, corsHeaders)
 						case "/api/submissions":
 							return insertSubmission(request, db, corsHeaders)
-						case "/api/pairwise-humanlikeness":
-							return createPairwiseHumanLikeness(request, db, corsHeaders)
-						case "/api/mismatch-speech":
-							return createMismatchSpeech(request, db, corsHeaders)
+						// case "/api/pairwise-humanlikeness":
+						// 	return createPairwiseHumanLikeness(request, db, corsHeaders)
+						// case "/api/mismatch-speech":
+						// 	return createMismatchSpeech(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
