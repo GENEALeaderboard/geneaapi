@@ -53,11 +53,9 @@ export async function insertStudies(request, db, corsHeaders) {
 		}
 
 		const batchResult = await db.batch(batch)
-		console.log(JSON.stringify(batchResult))
 		for (const result of batchResult) {
 			studiesInsertedIds.push(result.meta.last_row_id)
 		}
-		console.log("studiesInsertedIds", studiesInsertedIds)
 		return responseSuccess(studiesInsertedIds, "All studies inserted successfully", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
