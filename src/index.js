@@ -16,8 +16,8 @@ import { insertUsers } from "./users/insertUsers"
 import { fetchVideos } from "./videos/fetchVideos"
 import { fetchSystemList } from "./systems/fetchSystemList"
 import { fetchSubmissionFiltered } from "./submissions/fetchSubmissionFiltered"
-import { validatePairwiseHumanLikeness } from "./pairwise-human-likeness/validatePairwiseHumanLikeness"
-import { createPairwiseHumanLikeness } from "./pairwise-human-likeness/createPairwiseHumanLikeness"
+import { validatePairwiseHumanLikeness } from "./pairwise-humanlikeness/validatePairwiseHumanLikeness"
+import { createPairwiseHumanLikeness } from "./pairwise-humanlikeness/createPairwiseHumanLikeness"
 import { fetchConfigs } from "./configs/fetchConfigs"
 import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
@@ -120,7 +120,7 @@ export default {
 							return insertStudies(request, db, corsHeaders)
 						case "/api/submissions":
 							return insertSubmission(request, db, corsHeaders)
-						case "/api/pairwise-human-likeness":
+						case "/api/pairwise-humanlikeness":
 							return createPairwiseHumanLikeness(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
@@ -131,7 +131,9 @@ export default {
 							return updateInputCode(request, db, corsHeaders)
 						case "/api/submissions":
 							return updateSubmission(request, db, corsHeaders)
-						case "/api/pairwise-human-likeness":
+						case "/api/pairwise-humanlikeness":
+							return validatePairwiseHumanLikeness(request, db, corsHeaders)
+						case "/api/pairwise-humanlikeness":
 							return validatePairwiseHumanLikeness(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
