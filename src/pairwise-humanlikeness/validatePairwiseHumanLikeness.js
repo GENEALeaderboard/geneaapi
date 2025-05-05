@@ -35,7 +35,11 @@ export async function validatePairwiseHumanLikeness(request, db, corsHeaders) {
 		for (let index = 0; index < data.length; index++) {
 			const { inputcode, sysA, sysB } = data[index]
 			const { results } = batchResults[index]
-			if (results.length <= 1) {
+			if (results.length === 0) {
+				return responseFailed(null, `Video ${inputcode} in line ${index + 1} not found`, 400, corsHeaders)
+			}
+
+			if (results.length === 1) {
 				const result = results[0]
 				let missingNames = []
 				if (result.systemname === sysA) {
