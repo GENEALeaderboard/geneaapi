@@ -57,12 +57,20 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 				return responseFailed(null, `Expected vote not found for idx: ${idx}`, 400, corsHeaders)
 			}
 
+			// console.log("metadataPath", metadataPath)
+			// const filename = metadataPath.replace(/\.[^.]+$/, "")
+			// console.log("filename", filename)
+			// const type = filename.split("_")[2]
+			// console.log("type", type)
+			// const volume = filename.split("_")[3]
+			// console.log("volume", volume)
+
 			console.log("metadataPath", metadataPath)
-			const filename = metadataPath.replace(/\.[^.]+$/, "")
+			const nameParts = metadataPath.split("/").pop().split(".")[0].split("_");
 			console.log("filename", filename)
-			const type = filename.split("_")[2]
+			const type = nameParts[2] || null;
 			console.log("type", type)
-			const volume = filename.split("_")[3]
+			const volume = nameParts[3] || null;
 			console.log("volume", volume)
 
 			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume))
