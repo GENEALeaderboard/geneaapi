@@ -42,7 +42,7 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 				console.log("attentionCheck", attentionCheck)
 				return responseFailed(null, `Attention check meta data not found for idx: ${idx}`, 400, corsHeaders)
 			}
-			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1, type: type1, volume: volume1 } = attentionCheck[0]
+			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1 } = attentionCheck[0]
 			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2, type: type2, volume: volume2 } = attentionCheck[1]
 
 			let expectedVote = expectedVote1
