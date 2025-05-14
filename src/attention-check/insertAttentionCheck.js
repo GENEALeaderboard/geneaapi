@@ -43,7 +43,7 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 				return responseFailed(null, `Attention check meta data not found for idx: ${idx}`, 400, corsHeaders)
 			}
 			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1 } = attentionCheck[0]
-			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2 } = attentionCheck[1]
+			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2, type: type2, volume: volume2 } = attentionCheck[1]
 
 			let expectedVote = expectedVote1
 			let metadataPath = path1;
@@ -72,6 +72,9 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 			console.log("type", type)
 			const volume = nameParts[3] || "volume1";
 			console.log("volume", volume)
+
+			type = type2
+			volume = volume2
 
 			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume))
 		}
