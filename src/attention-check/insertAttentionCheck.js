@@ -67,7 +67,7 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 
 			console.log("metadataPath", metadataPath)
 			const nameParts = metadataPath.split("/").pop().split(".")[0].split("_");
-			console.log("filename", filename)
+			console.log("filename", nameParts)
 			const type = nameParts[2] || null;
 			console.log("type", type)
 			const volume = nameParts[3] || null;
