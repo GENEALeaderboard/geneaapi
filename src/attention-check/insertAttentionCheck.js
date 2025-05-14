@@ -42,23 +42,26 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 				console.log("attentionCheck", attentionCheck)
 				return responseFailed(null, `Attention check meta data not found for idx: ${idx}`, 400, corsHeaders)
 			}
-			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1, type: type1, volume: volume1 } = attentionCheck[0]
-			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2, type: type2, volume: volume2 } = attentionCheck[1]
+			const { path: path1, url: url1, expectedVote: expectedVote1, videoid: videoid1 } = attentionCheck[0]
+			const { path: path2, url: url2, expectedVote: expectedVote2, videoid: videoid2 } = attentionCheck[1]
 
 			let expectedVote = expectedVote1
+			let metadataPath = path1;
+
 			if (expectedVote1 === "Reference") {
 				expectedVote = expectedVote2
-				console.log("volume1", volume1)
-				console.log("type1", type1)
-				console.log("volume2", volume2)
-				console.log("type2", type2)
+				metadataPath = path2
 			} else if (expectedVote2 !== "Reference") {
 				console.log("attentionCheck", JSON.stringify(attentionCheck))
 				console.log("expectedVote2", expectedVote2)
 				return responseFailed(null, `Expected vote not found for idx: ${idx}`, 400, corsHeaders)
 			}
 
-			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type2, volume2))
+			const nameParts = metadataPath.split("/").pop().split(".")[0].split("_");
+			const type = nameParts[2] || null;
+			const volume = nameParts[3] || null;
+
+			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume))
 		}
 		const attentionCheckResults = await db.batch(batchAttentionCheck)
 		const successAll = Array.from(attentionCheckResults).every((result) => result.success)
