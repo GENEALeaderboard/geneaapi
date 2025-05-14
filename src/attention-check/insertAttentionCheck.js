@@ -68,9 +68,9 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 			console.log("metadataPath", metadataPath)
 			const nameParts = metadataPath.split("/").pop().split(".")[0].split("_");
 			console.log("filename", nameParts)
-			const type = nameParts[2] || null;
+			const type = nameParts[2] || "type1";
 			console.log("type", type)
-			const volume = nameParts[3] || null;
+			const volume = nameParts[3] || "volume1";
 			console.log("volume", volume)
 
 			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume))
