@@ -8,14 +8,22 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 			return responseFailed(null, "Video meta data not found", 400, corsHeaders)
 		}
 
+		console.log("videos", videos)
+
 		const stmt = await db.prepare(`INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)`)
+		console.log("stmt", stmt)
+
 		const batch = Array.from(videos).map((video) => {
 			const { inputcode, path, url } = video
 			return stmt.bind(inputcode, "AttentionCheck", path, url, 0, "check")
 		})
 		const videoResults = await db.batch(batch)
-		const insertedIds = videoResults.map((result) => result.meta.last_row_id)
+		console.log("videoResults", videoResults)
 
+		const insertedIds = videoResults.map((result) => result.meta.last_row_id)
+		console.log("insertedIds", insertedIds)
+
+		
 		if (insertedIds.length !== videos.length) {
 			console.log("videoResults", JSON.stringify(videoResults))
 			return responseFailed(null, `Failed to insert video`, 400, corsHeaders)
