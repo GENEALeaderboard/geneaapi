@@ -61,9 +61,10 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 				console.log("expectedVote2", expectedVote2)
 				return responseFailed(null, `Expected vote not found for idx: ${idx}`, 400, corsHeaders)
 			}
-
+			console.log("hi rajmund", url1, path1, url2, path2, expectedVote, videoid1, videoid2, type2, volume2)
 			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type2, volume2))
 		}
+		
 		const attentionCheckResults = await db.batch(batchAttentionCheck)
 		const successAll = Array.from(attentionCheckResults).every((result) => result.success)
 
