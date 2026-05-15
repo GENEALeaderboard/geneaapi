@@ -2,7 +2,9 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function insertAttentionCheck(request, db, corsHeaders) {
 	try {
-		const { videos } = await request.json()
+		const body = await request.json()
+		const { videos } = body
+		const category = body.category || "origin"
 		if (!videos) {
 			console.log("videos", videos)
 			return responseFailed(null, "Video meta data not found", 400, corsHeaders)
@@ -40,8 +42,8 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 		}
 
 		const stmtAttentionCheck = await db.prepare(
-			`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2, type, volume)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2, type, volume, category)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 		)
 		console.log("pairAttentionCheck", pairAttentionCheck)
 		const batchAttentionCheck = []
@@ -65,7 +67,7 @@ export async function insertAttentionCheck(request, db, corsHeaders) {
 			let type = type1 == null ? type2 : type1
 			let volume = volume1 == null ? volume2 : volume1
 
-			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume))
+			batchAttentionCheck.push(stmtAttentionCheck.bind(url1, path1, url2, path2, expectedVote, videoid1, videoid2, type, volume, category))
 		}
 		
 		const attentionCheckResults = await db.batch(batchAttentionCheck)

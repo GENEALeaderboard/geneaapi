@@ -16,10 +16,11 @@ export async function insertSystems(request, db, corsHeaders) {
 		}
 
 		const { name, description, type, submissionid } = newSystem
+		const category = newSystem.category || "origin"
 
 		const response = await db
-			.prepare("INSERT INTO systems (name, description, type, submissionid) VALUES (?, ?, ?, ?)")
-			.bind(name, description, type, submissionid)
+			.prepare("INSERT INTO systems (name, description, type, submissionid, category) VALUES (?, ?, ?, ?, ?)")
+			.bind(name, description, type, submissionid, category)
 			.run()
 		if (!response.success) {
 			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)

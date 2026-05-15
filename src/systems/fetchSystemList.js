@@ -2,7 +2,13 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchSystemList(request, db, corsHeaders) {
 	try {
-		const response = await db.prepare("SELECT y.id, y.name, y.description, y.type, y.submissionid, u.email, u.createdat, u.teamname FROM systems y LEFT JOIN submissions u ON y.submissionid = u.id AND y.submissionid IS NOT NULL;").all()
+		const url = new URL(request.url)
+		const category = url.searchParams.get("category") || "origin"
+
+		const response = await db
+			.prepare("SELECT y.id, y.name, y.description, y.type, y.category, y.submissionid, u.email, u.createdat, u.teamname FROM systems y LEFT JOIN submissions u ON y.submissionid = u.id AND y.submissionid IS NOT NULL WHERE y.category = ?;")
+			.bind(category)
+			.all()
 
 		if (!response.results) {
 			return responseFailed(null, "No systems found", 404, corsHeaders)

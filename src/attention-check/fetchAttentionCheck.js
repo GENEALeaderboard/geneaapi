@@ -2,7 +2,10 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchAttentionCheck(request, db, corsHeaders) {
 	try {
-		const response = await db.prepare("SELECT * FROM attentioncheck").all()
+		const url = new URL(request.url)
+		const category = url.searchParams.get("category") || "origin"
+
+		const response = await db.prepare("SELECT * FROM attentioncheck WHERE category = ?").bind(category).all()
 
 		if (!response.results) {
 			return responseFailed(null, "No videos found", 404, corsHeaders)
