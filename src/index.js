@@ -32,6 +32,7 @@ import { updateSubmission } from "./submissions/updateSubmission"
 
 import { validateMismatchSpeech } from "./mismatch-speech/validateMismatchSpeech"
 import { validatePairwiseHumanLikeness } from "./pairwise-humanlikeness/validatePairwiseHumanLikeness"
+import { validateSeamlessHumanLikeness } from "./seamless-humanlikeness/validateSeamlessHumanLikeness"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -139,6 +140,8 @@ export default {
 							return updateSubmission(request, db, corsHeaders)
 						case "/api/pairwise-humanlikeness":
 							return validatePairwiseHumanLikeness(request, db, corsHeaders)
+						case "/api/seamless-humanlikeness":
+							return validateSeamlessHumanLikeness(request, db, corsHeaders)
 						case "/api/mismatch-speech":
 							return validateMismatchSpeech(request, db, corsHeaders)
 						default:

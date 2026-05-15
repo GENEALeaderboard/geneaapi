@@ -2,12 +2,19 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function updateInputCode(request, db, corsHeaders) {
 	try {
-		const { codes } = await request.json()
-		if (!codes) {
+		const { codes, type = "origin" } = await request.json()
+		if (codes === undefined || codes === null) {
 			return responseFailed(null, "Invalid input", 400, corsHeaders)
 		}
 
-		const response = await db.prepare("UPDATE inputcode SET code = ? WHERE id = 1").bind(codes).run()
+		const existing = await db.prepare("SELECT id FROM inputcode WHERE type = ?").bind(type).all()
+		let response
+		if (existing.results && existing.results.length > 0) {
+			response = await db.prepare("UPDATE inputcode SET code = ? WHERE type = ?").bind(codes, type).run()
+		} else {
+			response = await db.prepare("INSERT INTO inputcode (code, type) VALUES (?, ?)").bind(codes, type).run()
+		}
+
 		if (!response.success) {
 			return responseFailed(null, "Failed to update inputcode", 400, corsHeaders)
 		}

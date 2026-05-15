@@ -2,13 +2,17 @@ import { responseError, responseFailed, responseSuccess } from "../response"
 
 export async function fetchInputCode(request, db, corsHeaders) {
 	try {
-		const response = await db.prepare("SELECT * FROM inputcode").all()
+		const url = new URL(request.url)
+		const type = url.searchParams.get("type") || "origin"
+
+		const response = await db.prepare("SELECT * FROM inputcode WHERE type = ?").bind(type).all()
 
 		if (!response.results || response.results.length === 0) {
-			return responseFailed(null, "No inputcode found", 404, corsHeaders)
+			return responseFailed(null, `No inputcode found for type '${type}'`, 404, corsHeaders)
 		}
 
-		const codes = response.results[0].code.split(",")
+		const raw = response.results[0].code || ""
+		const codes = raw === "" ? [] : raw.split(",")
 
 		return responseSuccess(codes, "Fetch codes success", corsHeaders)
 	} catch (err) {
