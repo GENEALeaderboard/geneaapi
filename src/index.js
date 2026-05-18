@@ -33,6 +33,9 @@ import { updateSubmission } from "./submissions/updateSubmission"
 import { validateMismatchSpeech } from "./mismatch-speech/validateMismatchSpeech"
 import { validatePairwiseHumanLikeness } from "./pairwise-humanlikeness/validatePairwiseHumanLikeness"
 import { validateSeamlessHumanLikeness } from "./seamless-humanlikeness/validateSeamlessHumanLikeness"
+import { validateSeamlessSpeechMismatch } from "./seamless-speech-mismatch/validateSeamlessSpeechMismatch"
+import { validateSeamlessDyadicMismatch } from "./seamless-dyadic-mismatch/validateSeamlessDyadicMismatch"
+import { validateSeamlessSemanticMismatch } from "./seamless-semantic-mismatch/validateSeamlessSemanticMismatch"
 
 export default {
 	async fetch(request, env, ctx) {
@@ -142,6 +145,12 @@ export default {
 							return validatePairwiseHumanLikeness(request, db, corsHeaders)
 						case "/api/seamless-humanlikeness":
 							return validateSeamlessHumanLikeness(request, db, corsHeaders)
+						case "/api/seamless-speech-mismatch":
+							return validateSeamlessSpeechMismatch(request, db, corsHeaders)
+						case "/api/seamless-dyadic-mismatch":
+							return validateSeamlessDyadicMismatch(request, db, corsHeaders)
+						case "/api/seamless-semantic-mismatch":
+							return validateSeamlessSemanticMismatch(request, db, corsHeaders)
 						case "/api/mismatch-speech":
 							return validateMismatchSpeech(request, db, corsHeaders)
 						default:
