@@ -1,5 +1,10 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
+// Validates a Seamless Semantic Mismatch study CSV.
+// Columns: [model, clip_name (inputcode), mismatched_text].
+// There is a single video pool (seamless-semantic-origin); each row must have a
+// matching video. The correct text lives in the video's .txt and is validated
+// client-side at generation time (geneaapi has no R2 binding).
 export async function validateSeamlessSemanticMismatch(request, db, corsHeaders) {
 	try {
 		const { csv } = await request.json()
@@ -7,44 +12,35 @@ export async function validateSeamlessSemanticMismatch(request, db, corsHeaders)
 			return responseFailed(null, "CSV data is required", 400, corsHeaders)
 		}
 
-		const query1 = `SELECT * FROM videos
+		const query = `SELECT * FROM videos
 			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-semantic-origin'`
-		const query2 = `SELECT * FROM videos
-			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-semantic-mismatch'`
-		const stmt1 = await db.prepare(query1)
-		const stmt2 = await db.prepare(query2)
-		const batch1 = []
-		const batch2 = []
+		const stmt = await db.prepare(query)
+		const batch = []
 		const data = []
 		for (let index = 0; index < csv.length; index++) {
 			const row = csv[index]
-			const inputcode1 = String(row[0]).replace(/\s+/g, "")
-			const systemname = String(row[1]).replace(/\s+/g, "")
-			const inputcode2 = String(row[2]).replace(/\s+/g, "")
+			const systemname = String(row[0]).replace(/\s+/g, "")
+			const inputcode = String(row[1]).replace(/\s+/g, "")
+			const mismatchedText = String(row[2] ?? "").trim()
 
-			batch1.push(stmt1.bind(systemname, inputcode1))
-			batch2.push(stmt2.bind(systemname, inputcode2))
-			data.push({ inputcode1, systemname, inputcode2 })
+			if (!mismatchedText) {
+				return responseFailed(null, `Missing mismatched text in line ${index + 1}`, 400, corsHeaders)
+			}
+
+			batch.push(stmt.bind(systemname, inputcode))
+			data.push({ systemname, inputcode })
 		}
 
-		const batchResults1 = await db.batch(batch1)
-		if (csv.length !== batchResults1.length || csv.length !== data.length) {
+		const batchResults = await db.batch(batch)
+		if (csv.length !== batchResults.length || csv.length !== data.length) {
 			return responseFailed(null, "Failed validate result", 400, corsHeaders)
 		}
-		const batchResults2 = await db.batch(batch2)
-		if (csv.length !== batchResults2.length || csv.length !== data.length) {
-			return responseFailed(null, "Failed validate result", 400, corsHeaders)
-		}
-		const resultItems1 = batchResults1.map((item) => item.results)
-		const resultItems2 = batchResults2.map((item) => item.results)
+		const resultItems = batchResults.map((item) => item.results)
 
 		for (let index = 0; index < data.length; index++) {
-			const { inputcode1, systemname, inputcode2 } = data[index]
-			if (resultItems1[index].length <= 0) {
-				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode1}`, 400, corsHeaders)
-			}
-			if (resultItems2[index].length <= 0) {
-				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode2}`, 400, corsHeaders)
+			const { systemname, inputcode } = data[index]
+			if (resultItems[index].length <= 0) {
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode}`, 400, corsHeaders)
 			}
 		}
 
