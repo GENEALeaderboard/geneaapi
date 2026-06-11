@@ -22,6 +22,7 @@ import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
 import { insertSubmission } from "./submissions/insertSubmission"
 import { insertSystems } from "./systems/insertSystems"
+import { insertSeamlessSystem } from "./systems/insertSeamlessSystem"
 import { insertUsers } from "./users/insertUsers"
 import { insertVideos } from "./videos/insertVideos"
 
@@ -114,6 +115,8 @@ export default {
 					switch (path) {
 						case "/api/systems":
 							return insertSystems(request, db, corsHeaders)
+						case "/api/systems/seamless":
+							return insertSeamlessSystem(request, db, corsHeaders)
 						case "/api/users":
 							return insertUsers(request, db, corsHeaders)
 						case "/api/videos":
