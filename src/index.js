@@ -17,6 +17,7 @@ import { handleGithubCallback } from "./auth/handleGithubCallback"
 import { handleLogout } from "./auth/handleLogout"
 
 import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
+import { insertSemanticAttentionCheck } from "./attention-check/insertSemanticAttentionCheck"
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { insertPages } from "./pages/insertPages"
 import { insertStudies } from "./studies/insertStudies"
@@ -125,6 +126,8 @@ export default {
 							return insertMismatch(request, db, corsHeaders)
 						case "/api/attention-check":
 							return insertAttentionCheck(request, db, corsHeaders)
+						case "/api/attention-check/semantic":
+							return insertSemanticAttentionCheck(request, db, corsHeaders)
 						case "/api/pages":
 							return insertPages(request, db, corsHeaders)
 						case "/api/studies":
