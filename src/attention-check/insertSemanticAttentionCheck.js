@@ -32,16 +32,27 @@ export async function insertSemanticAttentionCheck(request, db, corsHeaders) {
 		}
 		const videoid = videoInsert.meta.last_row_id
 
-		const checkInsert = await db
-			.prepare(
-				`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2, type, volume, category, correct_text, distractor_text)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-			)
-			.bind(url, path, url, path, "TextChoice", videoid, videoid, "Text", "Unmuted", category, correctText.trim(), distractorText.trim())
-			.run()
+		// If the attentioncheck insert throws (e.g. the correct_text/distractor_text
+		// columns are missing), roll back the orphan video row and surface the error
+		// instead of leaving a half-written check.
+		try {
+			const checkInsert = await db
+				.prepare(
+					`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2, type, volume, category, correct_text, distractor_text)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				)
+				.bind(url, path, url, path, "TextChoice", videoid, videoid, "Text", "Unmuted", category, correctText.trim(), distractorText.trim())
+				.run()
 
-		if (!checkInsert.success) {
-			return responseFailed(null, "Failed to insert attention check", 400, corsHeaders)
+			if (!checkInsert.success) {
+				await db.prepare(`DELETE FROM videos WHERE id = ?`).bind(videoid).run()
+				return responseFailed(null, "Failed to insert attention check", 400, corsHeaders)
+			}
+		} catch (checkErr) {
+			await db.prepare(`DELETE FROM videos WHERE id = ?`).bind(videoid).run()
+			const msg = checkErr.message || "Failed to insert attention check"
+			console.log("[insertSemanticAttentionCheck] attentioncheck insert failed", checkErr)
+			return responseFailed(null, `Failed to insert attention check: ${msg}`, 400, corsHeaders)
 		}
 
 		return responseSuccess({}, "Semantic attention check created successfully", corsHeaders)
