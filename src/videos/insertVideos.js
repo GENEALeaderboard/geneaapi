@@ -10,13 +10,26 @@ export async function insertVideos(request, db, corsHeaders) {
 		for (const video of videos) {
 			const { inputcode, systemname, path, url, systemid, type } = video
 
-			const response = await db
-				.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
-				.bind(inputcode, systemname, path, url, systemid, type)
-				.run()
+			// Upsert keyed on (inputcode, systemname, type): a re-upload must refresh the
+			// existing row's path/url in place so study pages keep resolving the video,
+			// instead of inserting a duplicate row that nothing references.
+			const existing = await db
+				.prepare("SELECT id FROM videos WHERE inputcode = ? AND systemname = ? AND type = ?")
+				.bind(inputcode, systemname, type)
+				.first()
+
+			const response = existing
+				? await db
+						.prepare("UPDATE videos SET path = ?, url = ?, systemid = ? WHERE id = ?")
+						.bind(path, url, systemid, existing.id)
+						.run()
+				: await db
+						.prepare("INSERT INTO videos (inputcode, systemname, path, url, systemid, type) VALUES (?, ?, ?, ?, ?, ?)")
+						.bind(inputcode, systemname, path, url, systemid, type)
+						.run()
 
 			if (!response.success) {
-				return responseFailed(null, `Failed to insert video with inputcode: ${inputcode}`, 400, corsHeaders)
+				return responseFailed(null, `Failed to upsert video with inputcode: ${inputcode}`, 400, corsHeaders)
 			}
 		}
 

@@ -8,9 +8,9 @@ export async function validateSeamlessDyadicMismatch(request, db, corsHeaders) {
 		}
 
 		const query1 = `SELECT * FROM videos
-			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-dyadic-origin'`
+			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-dyadic-mismatch/matched'`
 		const query2 = `SELECT * FROM videos
-			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-dyadic-mismatch'`
+			WHERE systemname = ? AND inputcode = ? AND type = 'seamless-dyadic-mismatch/mismatched'`
 		const stmt1 = await db.prepare(query1)
 		const stmt2 = await db.prepare(query2)
 		const batch1 = []
@@ -18,13 +18,14 @@ export async function validateSeamlessDyadicMismatch(request, db, corsHeaders) {
 		const data = []
 		for (let index = 0; index < csv.length; index++) {
 			const row = csv[index]
-			const inputcode1 = String(row[0]).replace(/\s+/g, "")
+			// CSV columns: [clip, system]. Matched and mismatched share the same
+			// filename, so one code is checked against both pools.
+			const inputcode = String(row[0]).replace(/\s+/g, "")
 			const systemname = String(row[1]).replace(/\s+/g, "")
-			const inputcode2 = String(row[2]).replace(/\s+/g, "")
 
-			batch1.push(stmt1.bind(systemname, inputcode1))
-			batch2.push(stmt2.bind(systemname, inputcode2))
-			data.push({ inputcode1, systemname, inputcode2 })
+			batch1.push(stmt1.bind(systemname, inputcode))
+			batch2.push(stmt2.bind(systemname, inputcode))
+			data.push({ inputcode, systemname })
 		}
 
 		const batchResults1 = await db.batch(batch1)
@@ -39,12 +40,12 @@ export async function validateSeamlessDyadicMismatch(request, db, corsHeaders) {
 		const resultItems2 = batchResults2.map((item) => item.results)
 
 		for (let index = 0; index < data.length; index++) {
-			const { inputcode1, systemname, inputcode2 } = data[index]
+			const { inputcode, systemname } = data[index]
 			if (resultItems1[index].length <= 0) {
-				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode1}`, 400, corsHeaders)
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found matched video for: ${inputcode}`, 400, corsHeaders)
 			}
 			if (resultItems2[index].length <= 0) {
-				return responseFailed(null, `System ${systemname} in line ${index + 1} not found video for: ${inputcode2}`, 400, corsHeaders)
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found mismatched video for: ${inputcode}`, 400, corsHeaders)
 			}
 		}
 

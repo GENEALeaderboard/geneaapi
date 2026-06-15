@@ -20,6 +20,7 @@ import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
 import { insertSemanticAttentionCheck } from "./attention-check/insertSemanticAttentionCheck"
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { insertPages } from "./pages/insertPages"
+import { deleteStudies } from "./studies/deleteStudies"
 import { insertStudies } from "./studies/insertStudies"
 import { insertSubmission } from "./submissions/insertSubmission"
 import { insertSystems } from "./systems/insertSystems"
@@ -43,7 +44,7 @@ export default {
 	async fetch(request, env, ctx) {
 		const corsHeaders = {
 			"Access-Control-Allow-Origin": env.ALLOWED_ORIGIN,
-			"Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS, PATCH",
+			"Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS, PATCH, DELETE",
 			"Access-Control-Allow-Headers": "Content-Type",
 			"Access-Control-Allow-Credentials": "true",
 			"Access-Control-Max-Age": "86400",
@@ -159,6 +160,13 @@ export default {
 							return validateSeamlessSemanticMismatch(request, db, corsHeaders)
 						case "/api/mismatch-speech":
 							return validateMismatchSpeech(request, db, corsHeaders)
+						default:
+							return responseFailed(null, "Invalid api", 404, corsHeaders)
+					}
+				} else if (menthod === "DELETE") {
+					switch (path) {
+						case "/api/studies":
+							return deleteStudies(request, db, corsHeaders)
 						default:
 							return responseFailed(null, "Invalid api", 404, corsHeaders)
 					}
