@@ -12,7 +12,10 @@ export async function fetchInputCode(request, db, corsHeaders) {
 		}
 
 		const raw = response.results[0].code || ""
-		const codes = raw === "" ? [] : raw.split(",")
+		const codes = raw
+			.split(",")
+			.map((c) => c.trim())
+			.filter(Boolean)
 
 		return responseSuccess(codes, "Fetch codes success", corsHeaders)
 	} catch (err) {
