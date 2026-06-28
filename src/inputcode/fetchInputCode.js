@@ -1,4 +1,4 @@
-import { responseError, responseFailed, responseSuccess } from "../response"
+import { responseError, responseSuccess } from "../response"
 
 export async function fetchInputCode(request, db, corsHeaders) {
 	try {
@@ -8,7 +8,7 @@ export async function fetchInputCode(request, db, corsHeaders) {
 		const response = await db.prepare("SELECT * FROM inputcode WHERE type = ?").bind(type).all()
 
 		if (!response.results || response.results.length === 0) {
-			return responseFailed(null, `No inputcode found for type '${type}'`, 404, corsHeaders)
+			return responseSuccess([], `No inputcode found for type '${type}'`, corsHeaders)
 		}
 
 		const raw = response.results[0].code || ""
