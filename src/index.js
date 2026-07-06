@@ -2,6 +2,7 @@ import { fetchAllStudies } from "./studies/fetchAllStudies"
 import { fetchAttentionCheck } from "./attention-check/fetchAttentionCheck"
 import { fetchConfigs } from "./configs/fetchConfigs"
 import { fetchInputCode } from "./inputcode/fetchInputCode"
+import { fetchInputCodePairs } from "./inputcode/fetchInputCodePairs"
 import { fetchMismatch } from "./mismatch/fetchMismatch"
 import { fetchParticipants } from "./participants/fetchParticipants"
 import { fetchStudies } from "./studies/fetchStudies"
@@ -31,6 +32,7 @@ import { insertVideos } from "./videos/insertVideos"
 import { isValidateToken } from "./validateToken"
 import { responseError, responseFailed } from "./response"
 import { updateInputCode } from "./inputcode/updateInputCode"
+import { updateInputCodePairs } from "./inputcode/updateInputCodePairs"
 import { updateSubmission } from "./submissions/updateSubmission"
 
 import { validateMismatchSpeech } from "./mismatch-speech/validateMismatchSpeech"
@@ -86,6 +88,8 @@ export default {
 					switch (path) {
 						case "/api/inputcode":
 							return fetchInputCode(request, db, corsHeaders)
+						case "/api/inputcode-pairs":
+							return fetchInputCodePairs(request, db, corsHeaders)
 						case "/api/participants":
 							return fetchParticipants(request, db, corsHeaders)
 						case "/api/study":
@@ -146,6 +150,8 @@ export default {
 					switch (path) {
 						case "/api/inputcode":
 							return updateInputCode(request, db, corsHeaders)
+						case "/api/inputcode-pairs":
+							return updateInputCodePairs(request, db, corsHeaders)
 						case "/api/submissions":
 							return updateSubmission(request, db, corsHeaders)
 						case "/api/pairwise-humanlikeness":
