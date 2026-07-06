@@ -1,4 +1,5 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
+import { loadPairMap, normalizeCode } from "../inputcode/inputCodePairsConfig"
 
 export async function validateSeamlessSpeechMismatch(request, db, corsHeaders) {
 	try {
@@ -6,6 +7,14 @@ export async function validateSeamlessSpeechMismatch(request, db, corsHeaders) {
 		if (!csv) {
 			console.log("request", request)
 			return responseFailed(null, "CSV data is required", 400, corsHeaders)
+		}
+
+		// Matched and mismatched stimuli no longer share a filename: the mismatched
+		// code is looked up from the uploaded 1:1 pairs list. Load it once and map
+		// each CSV matched code to its mismatched partner before checking the pools.
+		const pairMap = await loadPairMap(db, "seamless-speech-mismatch")
+		if (pairMap.size === 0) {
+			return responseFailed(null, "No matched/mismatched input-code pairs found. Upload the pairs list first.", 400, corsHeaders)
 		}
 
 		const query1 = `SELECT * FROM videos
@@ -19,14 +28,18 @@ export async function validateSeamlessSpeechMismatch(request, db, corsHeaders) {
 		const data = []
 		for (let index = 0; index < csv.length; index++) {
 			const row = csv[index]
-			// CSV columns: [clip, system]. Matched and mismatched share the same
-			// filename, so one code is checked against both pools.
-			const inputcode = String(row[0]).replace(/\s+/g, "")
+			// CSV columns: [clip, system]. The clip is the matched code; its
+			// mismatched partner comes from the pairs map.
+			const inputcode = normalizeCode(row[0])
 			const systemname = String(row[1]).replace(/\s+/g, "")
+			const mismatchedcode = pairMap.get(inputcode)
+			if (!mismatchedcode) {
+				return responseFailed(null, `Matched code '${inputcode}' in line ${index + 1} has no mismatched pair`, 400, corsHeaders)
+			}
 
 			batch1.push(stmt1.bind(systemname, inputcode))
-			batch2.push(stmt2.bind(systemname, inputcode))
-			data.push({ inputcode, systemname })
+			batch2.push(stmt2.bind(systemname, mismatchedcode))
+			data.push({ inputcode, mismatchedcode, systemname })
 		}
 
 		const batchResults1 = await db.batch(batch1)
@@ -41,12 +54,12 @@ export async function validateSeamlessSpeechMismatch(request, db, corsHeaders) {
 		const resultItems2 = batchResults2.map((item) => item.results)
 
 		for (let index = 0; index < data.length; index++) {
-			const { inputcode, systemname } = data[index]
+			const { inputcode, mismatchedcode, systemname } = data[index]
 			if (resultItems1[index].length <= 0) {
 				return responseFailed(null, `System ${systemname} in line ${index + 1} not found matched video for: ${inputcode}`, 400, corsHeaders)
 			}
 			if (resultItems2[index].length <= 0) {
-				return responseFailed(null, `System ${systemname} in line ${index + 1} not found mismatched video for: ${inputcode}`, 400, corsHeaders)
+				return responseFailed(null, `System ${systemname} in line ${index + 1} not found mismatched video for: ${mismatchedcode}`, 400, corsHeaders)
 			}
 		}
 

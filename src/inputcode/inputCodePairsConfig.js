@@ -16,6 +16,26 @@ export function normalizeCode(code) {
 	return String(code).trim().replace(/\s+/g, "").replace(/\.[^.]+$/, "")
 }
 
+// Loads the stored matched-mismatched pairs for a study type and returns a
+// Map<matchedCode, mismatchedCode> with both sides normalized. Reads the
+// "matched:mismatched,..." encoding written by updateInputCodePairs. Returns an
+// empty map when no pairs are stored.
+export async function loadPairMap(db, type) {
+	const storageType = pairsStorageType(type)
+	const row = await db.prepare("SELECT code FROM inputcode WHERE type = ?").bind(storageType).all()
+	const raw = row.results && row.results.length > 0 ? row.results[0].code || "" : ""
+	const map = new Map()
+	raw
+		.split(",")
+		.map((token) => token.trim())
+		.filter(Boolean)
+		.forEach((token) => {
+			const [matched, mismatched] = token.split(":").map((c) => normalizeCode(c))
+			if (matched && mismatched) map.set(matched, mismatched)
+		})
+	return map
+}
+
 // Parses the uploaded pairs text file. Each non-empty line is expected in the
 // form "(matched, mismatched)" (parentheses optional). Returns an array of
 // { matched, mismatched, line } (normalized) or throws with a readable message.
