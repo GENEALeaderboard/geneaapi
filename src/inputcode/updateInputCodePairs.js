@@ -1,18 +1,18 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
-import { INPUT_CODE_PAIR_POOLS, pairsStorageType, parsePairsText } from "./inputCodePairsConfig"
+import { SUPPORTED_PAIR_TYPES, normalizeCode, pairsStorageType, parsePairsText } from "./inputCodePairsConfig"
 
 // Validates and stores a list of matched-mismatched input-code pairs for a
 // mismatching-seamless study (dyadic or speech). The pairs arrive as the raw
-// text of an uploaded file, one "(matched, mismatched)" per line. Every matched
-// code must exist in the study's matched video pool and every mismatched code in
-// its mismatched pool. On success the pairs are stored in the inputcode table
-// under `${type}-pairs`, encoded as "matched:mismatched,matched:mismatched".
+// text of an uploaded file, one "(matched, mismatched)" per line. Every code —
+// matched and mismatched — must be present in the study's input-code list (the
+// "Segment filenames" list stored under `type` in the inputcode table). On
+// success the pairs are stored under `${type}-pairs`, encoded as
+// "matched:mismatched,matched:mismatched".
 export async function updateInputCodePairs(request, db, corsHeaders) {
 	try {
 		const { pairs: pairsText, type } = await request.json()
 
-		const pools = INPUT_CODE_PAIR_POOLS[type]
-		if (!pools) {
+		if (!SUPPORTED_PAIR_TYPES.includes(type)) {
 			return responseFailed(null, `Unsupported study type for pairs: '${type}'`, 400, corsHeaders)
 		}
 		if (pairsText === undefined || pairsText === null) {
@@ -29,22 +29,27 @@ export async function updateInputCodePairs(request, db, corsHeaders) {
 			return responseFailed(null, "No pairs provided", 400, corsHeaders)
 		}
 
-		// Validate every code exists in its pool. Matched checks then mismatched
-		// checks are run as two batches, index-aligned with `pairs`.
-		const stmt = await db.prepare("SELECT 1 FROM videos WHERE inputcode = ? AND type = ? LIMIT 1")
-		const matchedBatch = pairs.map((p) => stmt.bind(p.matched, pools.matched))
-		const mismatchedBatch = pairs.map((p) => stmt.bind(p.mismatched, pools.mismatched))
+		// Load the study's input-code list and validate both sides of each pair
+		// against it (not against uploaded video files).
+		const listRow = await db.prepare("SELECT code FROM inputcode WHERE type = ?").bind(type).all()
+		const rawList = listRow.results && listRow.results.length > 0 ? listRow.results[0].code || "" : ""
+		const validCodes = new Set(
+			rawList
+				.split(",")
+				.map((c) => normalizeCode(c))
+				.filter(Boolean),
+		)
 
-		const matchedResults = await db.batch(matchedBatch)
-		const mismatchedResults = await db.batch(mismatchedBatch)
+		if (validCodes.size === 0) {
+			return responseFailed(null, `No input codes found for '${type}'. Add the input codes first.`, 400, corsHeaders)
+		}
 
-		for (let i = 0; i < pairs.length; i++) {
-			const { matched, mismatched, line } = pairs[i]
-			if ((matchedResults[i].results || []).length <= 0) {
-				return responseFailed(null, `Matched code '${matched}' (line ${line}) not found in ${pools.matched}`, 400, corsHeaders)
+		for (const { matched, mismatched, line } of pairs) {
+			if (!validCodes.has(matched)) {
+				return responseFailed(null, `Matched code '${matched}' (line ${line}) is not in the input code list`, 400, corsHeaders)
 			}
-			if ((mismatchedResults[i].results || []).length <= 0) {
-				return responseFailed(null, `Mismatched code '${mismatched}' (line ${line}) not found in ${pools.mismatched}`, 400, corsHeaders)
+			if (!validCodes.has(mismatched)) {
+				return responseFailed(null, `Mismatched code '${mismatched}' (line ${line}) is not in the input code list`, 400, corsHeaders)
 			}
 		}
 
