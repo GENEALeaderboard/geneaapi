@@ -1,5 +1,5 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
-import { SUPPORTED_PAIR_TYPES, normalizeCode, pairsStorageType, parsePairsText } from "./inputCodePairsConfig"
+import { SUPPORTED_PAIR_TYPES, normalizeCode, pairsStorageType, pairsUseSuffix, parsePairsText } from "./inputCodePairsConfig"
 
 // Validates and stores a list of matched-mismatched input-code pairs for a
 // mismatching-seamless study (dyadic or speech). The pairs arrive as the raw
@@ -21,7 +21,7 @@ export async function updateInputCodePairs(request, db, corsHeaders) {
 
 		let pairs
 		try {
-			pairs = parsePairsText(pairsText)
+			pairs = parsePairsText(pairsText, pairsUseSuffix(type))
 		} catch (parseErr) {
 			return responseFailed(null, parseErr.message, 400, corsHeaders)
 		}

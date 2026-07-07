@@ -1,15 +1,24 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
+import { loadPairMap, normalizeCode } from "../inputcode/inputCodePairsConfig"
 
 // Validates a Seamless Semantic Mismatch study CSV.
-// Columns: [model, clip_name (inputcode), mismatched_text].
+// Columns: [model, clip_name (inputcode)].
 // There is a single video pool (seamless-semantic-origin); each row must have a
-// matching video. The correct text lives in the video's .txt and is validated
-// client-side at generation time (geneaapi has no R2 binding).
+// matching video and a matched/mismatched pair. The two text descriptions (the
+// clip's own and the paired clip's) live in R2 and are validated client-side at
+// generation time (geneaapi has no R2 binding).
 export async function validateSeamlessSemanticMismatch(request, db, corsHeaders) {
 	try {
 		const { csv } = await request.json()
 		if (!csv) {
 			return responseFailed(null, "CSV data is required", 400, corsHeaders)
+		}
+
+		// The distractor description comes from each clip's paired code, so every
+		// clip in the CSV must have a mismatched pair.
+		const pairMap = await loadPairMap(db, "seamless-semantic-mismatch")
+		if (pairMap.size === 0) {
+			return responseFailed(null, "No matched/mismatched pairs found. Upload the pairs list first.", 400, corsHeaders)
 		}
 
 		const query = `SELECT * FROM videos
@@ -20,11 +29,10 @@ export async function validateSeamlessSemanticMismatch(request, db, corsHeaders)
 		for (let index = 0; index < csv.length; index++) {
 			const row = csv[index]
 			const systemname = String(row[0]).replace(/\s+/g, "")
-			const inputcode = String(row[1]).replace(/\s+/g, "")
-			const mismatchedText = String(row[2] ?? "").trim()
+			const inputcode = normalizeCode(row[1])
 
-			if (!mismatchedText) {
-				return responseFailed(null, `Missing mismatched text in line ${index + 1}`, 400, corsHeaders)
+			if (!pairMap.get(inputcode)) {
+				return responseFailed(null, `Clip '${inputcode}' in line ${index + 1} has no mismatched pair`, 400, corsHeaders)
 			}
 
 			batch.push(stmt.bind(systemname, inputcode))

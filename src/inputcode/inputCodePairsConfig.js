@@ -1,7 +1,16 @@
-// Study types that support matched-mismatched input-code pairs. Only dyadic and
-// speech mismatch have pairs — semantic mismatch shows a single video at a time,
-// so it has no mismatched input codes.
-export const SUPPORTED_PAIR_TYPES = ["seamless-dyadic-mismatch", "seamless-speech-mismatch"]
+// Study types that support matched-mismatched input-code pairs.
+// - dyadic/speech: the mismatched clip is a separate video file named with the
+//   "_M" suffix; pairs are disambiguated by that suffix (order-independent).
+// - semantic: a pair links two ordinary clip codes — the second clip's text
+//   description is shown as the distractor next to the first clip's video; pairs
+//   are positional (matched first, mismatched/distractor second).
+export const SUPPORTED_PAIR_TYPES = ["seamless-dyadic-mismatch", "seamless-speech-mismatch", "seamless-semantic-mismatch"]
+
+// Whether pairs for a study type are disambiguated by the "_M" suffix (dyadic /
+// speech) or by position (semantic — both codes are ordinary clip codes).
+export function pairsUseSuffix(type) {
+	return type !== "seamless-semantic-mismatch"
+}
 
 // The inputcode-table `type` under which the pairs string is stored, derived
 // from the study type. Kept separate from the plain input-code list rows.
@@ -47,11 +56,14 @@ export function isMismatchedCode(code) {
 }
 
 // Parses the uploaded pairs text file. Each non-empty line holds two codes
-// (comma-separated, parentheses optional). Order does not matter: the code that
-// ends with the mismatch suffix ("_M") is the mismatched one, the other is
-// matched. Exactly one of the two must end with the suffix. Returns an array of
+// (comma-separated, parentheses optional). Returns an array of
 // { matched, mismatched, line } (normalized) or throws with a readable message.
-export function parsePairsText(text) {
+//
+// When `useSuffix` is true (dyadic/speech), order does not matter: the code that
+// ends with the mismatch suffix ("_M") is the mismatched one, and exactly one of
+// the two must end with it. When false (semantic), pairs are positional — the
+// first code is matched, the second is the mismatched/distractor clip.
+export function parsePairsText(text, useSuffix = true) {
 	const pairs = []
 	const lines = String(text).split(/\r?\n/)
 	for (let i = 0; i < lines.length; i++) {
@@ -60,20 +72,27 @@ export function parsePairsText(text) {
 		const inner = raw.replace(/^\(/, "").replace(/\)$/, "")
 		const parts = inner.split(",").map((p) => normalizeCode(p))
 		if (parts.length !== 2 || !parts[0] || !parts[1]) {
-			throw new Error(`Malformed pair on line ${i + 1}: expected two codes, e.g. "(clip, clip${MISMATCH_SUFFIX})"`)
+			const example = useSuffix ? `(clip, clip${MISMATCH_SUFFIX})` : "(matched_clip, mismatched_clip)"
+			throw new Error(`Malformed pair on line ${i + 1}: expected two codes, e.g. "${example}"`)
 		}
 
 		const [a, b] = parts
-		const aMis = isMismatchedCode(a)
-		const bMis = isMismatchedCode(b)
-		if (aMis === bMis) {
-			throw new Error(
-				`Malformed pair on line ${i + 1}: exactly one code must end with "${MISMATCH_SUFFIX}" (the mismatched one), got '${a}' and '${b}'`,
-			)
+		let matched, mismatched
+		if (useSuffix) {
+			const aMis = isMismatchedCode(a)
+			const bMis = isMismatchedCode(b)
+			if (aMis === bMis) {
+				throw new Error(
+					`Malformed pair on line ${i + 1}: exactly one code must end with "${MISMATCH_SUFFIX}" (the mismatched one), got '${a}' and '${b}'`,
+				)
+			}
+			matched = aMis ? b : a
+			mismatched = aMis ? a : b
+		} else {
+			// Positional: first is matched, second is the mismatched/distractor clip.
+			matched = a
+			mismatched = b
 		}
-
-		const matched = aMis ? b : a
-		const mismatched = aMis ? a : b
 		pairs.push({ matched, mismatched, line: i + 1 })
 	}
 	return pairs
