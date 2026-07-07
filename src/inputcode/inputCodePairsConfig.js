@@ -36,8 +36,20 @@ export async function loadPairMap(db, type) {
 	return map
 }
 
-// Parses the uploaded pairs text file. Each non-empty line is expected in the
-// form "(matched, mismatched)" (parentheses optional). Returns an array of
+// The mismatched code in a pair is identified by this suffix, not by its
+// position on the line. Exactly one code of each pair must end with it.
+export const MISMATCH_SUFFIX = "_M"
+
+// True if a (normalized) input code is a mismatched code, i.e. ends with the
+// mismatch suffix.
+export function isMismatchedCode(code) {
+	return String(code).endsWith(MISMATCH_SUFFIX)
+}
+
+// Parses the uploaded pairs text file. Each non-empty line holds two codes
+// (comma-separated, parentheses optional). Order does not matter: the code that
+// ends with the mismatch suffix ("_M") is the mismatched one, the other is
+// matched. Exactly one of the two must end with the suffix. Returns an array of
 // { matched, mismatched, line } (normalized) or throws with a readable message.
 export function parsePairsText(text) {
 	const pairs = []
@@ -48,9 +60,21 @@ export function parsePairsText(text) {
 		const inner = raw.replace(/^\(/, "").replace(/\)$/, "")
 		const parts = inner.split(",").map((p) => normalizeCode(p))
 		if (parts.length !== 2 || !parts[0] || !parts[1]) {
-			throw new Error(`Malformed pair on line ${i + 1}: expected "(matched, mismatched)"`)
+			throw new Error(`Malformed pair on line ${i + 1}: expected two codes, e.g. "(clip, clip${MISMATCH_SUFFIX})"`)
 		}
-		pairs.push({ matched: parts[0], mismatched: parts[1], line: i + 1 })
+
+		const [a, b] = parts
+		const aMis = isMismatchedCode(a)
+		const bMis = isMismatchedCode(b)
+		if (aMis === bMis) {
+			throw new Error(
+				`Malformed pair on line ${i + 1}: exactly one code must end with "${MISMATCH_SUFFIX}" (the mismatched one), got '${a}' and '${b}'`,
+			)
+		}
+
+		const matched = aMis ? b : a
+		const mismatched = aMis ? a : b
+		pairs.push({ matched, mismatched, line: i + 1 })
 	}
 	return pairs
 }
