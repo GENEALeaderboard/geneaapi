@@ -22,6 +22,7 @@ import { insertSemanticAttentionCheck } from "./attention-check/insertSemanticAt
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { insertPages } from "./pages/insertPages"
 import { deleteStudies } from "./studies/deleteStudies"
+import { failNewStudies } from "./studies/failNewStudies"
 import { insertStudies } from "./studies/insertStudies"
 import { insertSubmission } from "./submissions/insertSubmission"
 import { insertSystems } from "./systems/insertSystems"
@@ -152,6 +153,8 @@ export default {
 							return updateInputCode(request, db, corsHeaders)
 						case "/api/inputcode-pairs":
 							return updateInputCodePairs(request, db, corsHeaders)
+						case "/api/studies/fail-new":
+							return failNewStudies(request, db, corsHeaders)
 						case "/api/submissions":
 							return updateSubmission(request, db, corsHeaders)
 						case "/api/pairwise-humanlikeness":
