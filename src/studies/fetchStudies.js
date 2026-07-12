@@ -1,8 +1,5 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-// SQLite/D1 caps a statement at 999 bound variables; chunk IN(...) lists below it.
-const IN_CHUNK = 900
-
 export async function fetchStudies(request, db, corsHeaders) {
 	try {
 		// Optional ?type= filter: only studies of that type.
@@ -17,20 +14,17 @@ export async function fetchStudies(request, db, corsHeaders) {
 			return responseFailed(null, type ? `No studies found with type '${type}'` : "No studies found", 404, corsHeaders)
 		}
 
-		// Fetch pages for the returned studies in one (chunked) query, grouped by
-		// studyid — not one full-table scan per study. Uses the index on pages(studyid).
-		const ids = studies.map((study) => study.id)
+		// Pages for the selected studies, grouped by studyid. A studyid subquery keeps
+		// this to a single bound variable (D1 caps bound parameters per statement),
+		// and the index on pages(studyid) keeps it cheap.
+		const pagesStmt = type
+			? db.prepare("SELECT * FROM pages WHERE studyid IN (SELECT id FROM studies WHERE type = ?)").bind(type)
+			: db.prepare("SELECT * FROM pages")
+		const { results: allPages } = await pagesStmt.all()
+
 		const pagesDict = {}
-		for (let i = 0; i < ids.length; i += IN_CHUNK) {
-			const slice = ids.slice(i, i + IN_CHUNK)
-			const placeholders = slice.map(() => "?").join(", ")
-			const { results } = await db
-				.prepare(`SELECT * FROM pages WHERE studyid IN (${placeholders})`)
-				.bind(...slice)
-				.all()
-			for (const page of results) {
-				;(pagesDict[page.studyid] ||= []).push(page)
-			}
+		for (const page of allPages) {
+			;(pagesDict[page.studyid] ||= []).push(page)
 		}
 
 		const studiesWithPages = studies.map((study) => ({
