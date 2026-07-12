@@ -1,23 +1,40 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
-// Inserts one text-based Seamless Semantic Mismatch attention check: a single
-// video shown with an expected (correct) description and a distractor. The two
-// texts are stored on the attentioncheck row; the video is reused on both slots
-// so the existing two-video plumbing keeps working.
+// Maps the vote the admin picks on the upload page to the option value the study
+// app records when a rater clicks the matching button (see hemvip config
+// DEFAULT_OPTION and SemanticBoard). The attention check passes when the rater's
+// recorded option equals this stored `expected_vote`.
+const VOTE_TO_EXPECTED = {
+	left: "LeftClearlyBetter",
+	right: "RightClearlyBetter",
+	both: "BothExpressed",
+	neither: "NeitherExpressed",
+}
+
+// Inserts one Seamless Semantic Mismatch attention check: a single video shown
+// with two fixed descriptions (left and right) plus the expected vote — left,
+// right, both, or neither. The left/right texts are stored in the row's
+// correct_text/distractor_text columns and the expected vote in expected_vote;
+// the video is reused on both slots so the existing two-video plumbing keeps
+// working.
 export async function insertSemanticAttentionCheck(request, db, corsHeaders) {
 	try {
 		const body = await request.json()
-		const { video, correctText, distractorText } = body
+		const { video, leftText, rightText, expectedVote } = body
 		const category = body.category || "seamless-semantic-mismatch"
 
 		if (!video || !video.path || !video.url) {
 			return responseFailed(null, "Video metadata not found", 400, corsHeaders)
 		}
-		if (!correctText || !correctText.trim()) {
-			return responseFailed(null, "Expected text is required", 400, corsHeaders)
+		if (!leftText || !leftText.trim()) {
+			return responseFailed(null, "Left description is required", 400, corsHeaders)
 		}
-		if (!distractorText || !distractorText.trim()) {
-			return responseFailed(null, "Distractor text is required", 400, corsHeaders)
+		if (!rightText || !rightText.trim()) {
+			return responseFailed(null, "Right description is required", 400, corsHeaders)
+		}
+		const expected = VOTE_TO_EXPECTED[expectedVote]
+		if (!expected) {
+			return responseFailed(null, "Expected vote must be one of: left, right, both, neither", 400, corsHeaders)
 		}
 
 		const { inputcode, path, url } = video
@@ -41,7 +58,7 @@ export async function insertSemanticAttentionCheck(request, db, corsHeaders) {
 					`INSERT INTO attentioncheck (url1, path1, url2, path2, expected_vote, videoid1, videoid2, type, volume, category, correct_text, distractor_text)
 					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 				)
-				.bind(url, path, url, path, "TextChoice", videoid, videoid, "Text", "Unmuted", category, correctText.trim(), distractorText.trim())
+				.bind(url, path, url, path, expected, videoid, videoid, "Text", "Unmuted", category, leftText.trim(), rightText.trim())
 				.run()
 
 			if (!checkInsert.success) {
