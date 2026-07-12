@@ -1,35 +1,46 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
+// SQLite/D1 caps a statement at 999 bound variables; chunk IN(...) lists below it.
+const IN_CHUNK = 900
+
 export async function fetchStudies(request, db, corsHeaders) {
 	try {
-		const { results: studies } = await db.prepare("SELECT * FROM studies").all()
+		// Optional ?type= filter: only studies of that type.
+		const url = new URL(request.url)
+		const type = url.searchParams.get("type")
+
+		const studiesStmt = type
+			? db.prepare("SELECT * FROM studies WHERE type = ?").bind(type)
+			: db.prepare("SELECT * FROM studies")
+		const { results: studies } = await studiesStmt.all()
 		if (studies.length === 0) {
-			return responseFailed(null, "No studies found", 404, corsHeaders)
+			return responseFailed(null, type ? `No studies found with type '${type}'` : "No studies found", 404, corsHeaders)
 		}
 
-		const stmtPages = db.prepare(`SELECT * FROM pages WHERE studyid = ?`)
-		const batch = []
-
-		for (let study of studies) {
-			batch.push(stmtPages.bind(study.id))
-		}
-		const batchResults = await db.batch(batch)
-
-		if (batchResults.length !== studies.length) {
-			console.log("batchResults", batchResults)
-			return responseFailed(null, "Pages length not match with studies", 400, corsHeaders)
-		}
-		const studiesWithPages = studies.map((study, index) => {
-			const { results: pages } = batchResults[index]
-			return {
-				...study,
-				pages: pages,
+		// Fetch pages for the returned studies in one (chunked) query, grouped by
+		// studyid — not one full-table scan per study. Uses the index on pages(studyid).
+		const ids = studies.map((study) => study.id)
+		const pagesDict = {}
+		for (let i = 0; i < ids.length; i += IN_CHUNK) {
+			const slice = ids.slice(i, i + IN_CHUNK)
+			const placeholders = slice.map(() => "?").join(", ")
+			const { results } = await db
+				.prepare(`SELECT * FROM pages WHERE studyid IN (${placeholders})`)
+				.bind(...slice)
+				.all()
+			for (const page of results) {
+				;(pagesDict[page.studyid] ||= []).push(page)
 			}
-		})
+		}
+
+		const studiesWithPages = studies.map((study) => ({
+			...study,
+			pages: pagesDict[study.id] || [],
+		}))
 		return responseSuccess(studiesWithPages, "Fetch studies success", corsHeaders)
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
-		console.log("Exception", err)
-		return responseError(err, errorMessage, 401, corsHeaders)
+		console.error("Exception", err)
+		return responseError(err, errorMessage, 500, corsHeaders)
 	}
 }

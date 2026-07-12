@@ -1,28 +1,30 @@
 import { responseError, responseFailed, responseSuccess } from "../response"
 
+// SQLite/D1 caps a statement at 999 bound variables; chunk IN(...) lists below it.
+const IN_CHUNK = 900
+
 export async function fetchAllStudies(request, db, corsHeaders) {
 	try {
-		// Fetch all studies
-		const { results: studies } = await db.prepare("SELECT * FROM studies").all()
+		// Optional ?type= filter: fetch only studies of that type, plus their
+		// pages/videos. Without it, return every study (the full export).
+		const url = new URL(request.url)
+		const type = url.searchParams.get("type")
+
+		const studiesStmt = type
+			? db.prepare("SELECT * FROM studies WHERE type = ?").bind(type)
+			: db.prepare("SELECT * FROM studies")
+		const { results: studies } = await studiesStmt.all()
 		if (studies.length === 0) {
-			return responseFailed(null, "No studies found", 404, corsHeaders)
+			return responseFailed(null, type ? `No studies found with type '${type}'` : "No studies found", 404, corsHeaders)
 		}
 
-		// Fetch pages for all studies
-		// pagesDict: [studyId: {pages:[page1, page2, ..., pageN]}]
+		// Fetch pages only for the studies we're returning.
+		// pagesDict: { [studyId]: [page1, page2, ...] }
 		const pageDictByStudies = await fetchPagesForStudies(db, studies)
-		if (!pageDictByStudies) {
-			console.log("pagesDict", JSON.stringify(pageDictByStudies))
-			return responseFailed(null, "Pages length does not match studies", 400, corsHeaders)
-		}
 
-		// Fetch videos for all pages
-		// videosDict: [[videoid]: video]
+		// Fetch only the videos those pages reference.
+		// videoDict: { [videoId]: video }
 		const videoDict = await fetchVideosForPages(db, pageDictByStudies)
-		if (!videoDict) {
-			console.log("videosDict", JSON.stringify(videoDict))
-			return responseFailed(null, "Videos length does not match pages", 400, corsHeaders)
-		}
 
 		// Combine studies with their pages and videos
 		const studiesWithPages = combineStudiesWithPagesAndVideos(studies, pageDictByStudies, videoDict)
@@ -31,68 +33,68 @@ export async function fetchAllStudies(request, db, corsHeaders) {
 	} catch (err) {
 		const errorMessage = err.message || "An unknown error occurred"
 		console.error("Exception:", err)
-		return responseError(err, errorMessage, 401, corsHeaders)
+		return responseError(err, errorMessage, 500, corsHeaders)
 	}
 }
 
-// Helper function to fetch pages for all studies
+// Fetch pages for the given studies in one (chunked) query and group by studyid,
+// instead of one full-table scan per study. Relies on the index on pages(studyid).
 async function fetchPagesForStudies(db, studies) {
-	const stmtPages = db.prepare(`SELECT * FROM pages WHERE studyid = ?`)
-	const pagesBatch = studies.map((study) => stmtPages.bind(study.id))
-	const pagesResults = await db.batch(pagesBatch)
-
-	if (pagesResults.length !== studies.length) {
-		console.error("Batch results for pages:", pagesResults)
-		return null
-	}
-
+	const ids = studies.map((study) => study.id)
 	const pagesDict = {}
-	pagesResults.forEach((pageRes, index) => {
-		const studyId = studies[index].id
 
-		if (pageRes.results.length === 0) {
-			console.log("Page with studyId:", studyId, "not found any pages")
-		} else {
-			pagesDict[studyId] = pageRes.results
+	for (let i = 0; i < ids.length; i += IN_CHUNK) {
+		const slice = ids.slice(i, i + IN_CHUNK)
+		const placeholders = slice.map(() => "?").join(", ")
+		const { results } = await db
+			.prepare(`SELECT * FROM pages WHERE studyid IN (${placeholders})`)
+			.bind(...slice)
+			.all()
+		for (const page of results) {
+			;(pagesDict[page.studyid] ||= []).push(page)
 		}
-	})
+	}
 
 	return pagesDict
 }
 
-// Helper function to fetch videos for all pages
+// Fetch only the videos referenced by the pages (video1/video2), keyed by id.
 async function fetchVideosForPages(db, pagesDict) {
-	const { results: videoResults } = await db.prepare(`SELECT * FROM videos`).all()
-	const videoDict = {}
-	const allVideos = Array.from(videoResults).forEach((videoItem) => {
-		if (videoDict[videoItem.id]) {
-			throw new Error(`Duplicate video id: ${videoItem.id}`)
-		} else {
-			videoDict[videoItem.id] = []
+	const idSet = new Set()
+	for (const pages of Object.values(pagesDict)) {
+		for (const page of pages) {
+			if (page.video1 != null) idSet.add(page.video1)
+			if (page.video2 != null) idSet.add(page.video2)
 		}
-		videoDict[videoItem.id] = videoItem
-	})
+	}
+
+	const ids = Array.from(idSet)
+	const videoDict = {}
+
+	for (let i = 0; i < ids.length; i += IN_CHUNK) {
+		const slice = ids.slice(i, i + IN_CHUNK)
+		const placeholders = slice.map(() => "?").join(", ")
+		const { results } = await db
+			.prepare(`SELECT * FROM videos WHERE id IN (${placeholders})`)
+			.bind(...slice)
+			.all()
+		for (const video of results) {
+			videoDict[video.id] = video
+		}
+	}
 
 	return videoDict
 }
 
-// Helper function to combine studies with their pages and videos
+// Combine studies with their pages, resolving each page's video ids to objects.
 function combineStudiesWithPagesAndVideos(studies, pagesDict, videosDict) {
-	if (!studies || !pagesDict || !videosDict) {
-		return null
-	}
-	return Array.from(studies).map((study) => {
-		const pages = pagesDict[study.id]
-
-		const pagesWithVideos = (pages || []).map((page) => ({
+	return studies.map((study) => {
+		const pages = pagesDict[study.id] || []
+		const pagesWithVideos = pages.map((page) => ({
 			...page,
 			video1: videosDict[page.video1],
 			video2: videosDict[page.video2],
 		}))
-
-		return {
-			...study,
-			pages: pagesWithVideos,
-		}
+		return { ...study, pages: pagesWithVideos }
 	})
 }
