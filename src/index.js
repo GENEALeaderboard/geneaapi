@@ -19,6 +19,7 @@ import { handleLogout } from "./auth/handleLogout"
 
 import { insertAttentionCheck } from "./attention-check/insertAttentionCheck"
 import { insertSemanticAttentionCheck } from "./attention-check/insertSemanticAttentionCheck"
+import { insertPairedAttentionCheck } from "./attention-check/insertPairedAttentionCheck"
 import { insertMismatch } from "./mismatch/insertMismatch"
 import { insertPages } from "./pages/insertPages"
 import { deleteStudies } from "./studies/deleteStudies"
@@ -134,6 +135,8 @@ export default {
 							return insertAttentionCheck(request, db, corsHeaders)
 						case "/api/attention-check/semantic":
 							return insertSemanticAttentionCheck(request, db, corsHeaders)
+						case "/api/attention-check/paired":
+							return insertPairedAttentionCheck(request, db, corsHeaders)
 						case "/api/pages":
 							return insertPages(request, db, corsHeaders)
 						case "/api/studies":
